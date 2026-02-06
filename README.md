@@ -6,19 +6,26 @@ A Google Apps Script web app for generating personalized documents at scale. Con
 
 ## Screenshots
 
+<!-- Upload screenshots to repo root, then replace filenames below -->
 <p align="center">
-  <img src="screenshots/step1-data.png" width="700" alt="Step 1 - Data Source">
-  <br><em>Step 1 — Connect a Google Sheets data source and preview rows</em>
+  <img src="https://github.com/kornchaphat/mail-merge-studio/blob/61f13ddf39deb1dda3f437c83f08d532f6d26438/Screenshot%202026-02-07%20000525.png" width="700" alt="Step 1 - Data Source">
+  <br><em>Step 1 — Define data source, select sheet, set header row, and filter values</em>
 </p>
-
 <p align="center">
-  <img src="screenshots/step2-template.png" width="700" alt="Step 2 - Template">
-  <br><em>Step 2 — Select a Google Docs/Slides template with placeholder mapping</em>
+  <img src="https://github.com/kornchaphat/mail-merge-studio/blob/61f13ddf39deb1dda3f437c83f08d532f6d26438/Screenshot%202026-02-07%20000658.png" width="700" alt="Step 2 - Templates">
+  <br><em>Step 2 — Select one or multiple Google Docs/Slides templates with conditional rules</em>
 </p>
-
 <p align="center">
-  <img src="screenshots/step3-generate.png" width="700" alt="Step 3 - Generate">
-  <br><em>Step 3 — Configure output and batch-generate documents</em>
+  <img src="https://github.com/kornchaphat/mail-merge-studio/blob/61f13ddf39deb1dda3f437c83f08d532f6d26438/Screenshot%202026-02-07%20000903.png" width="700" alt="Step 3 - Mapping">
+  <br><em>Step 3 — Map template placeholders to spreadsheet column headers</em>
+</p>
+<p align="center">
+  <img src="https://github.com/kornchaphat/mail-merge-studio/blob/61f13ddf39deb1dda3f437c83f08d532f6d26438/Screenshot%202026-02-07%20000950.png" width="700" alt="Step 4 - Configuration">
+  <br><em>Step 4 — Configure output format, file naming pattern, and folder organization</em>
+</p>
+<p align="center">
+  <img src="https://github.com/kornchaphat/mail-merge-studio/blob/61f13ddf39deb1dda3f437c83f08d532f6d26438/Screenshot%202026-02-07%20001024.png" width="700" alt="Step 5 - Preview & Generate">
+  <br><em>Step 5 — Preview settings and generate documents</em>
 </p>
 
 ## Features
@@ -117,7 +124,7 @@ A Google Apps Script web app for generating personalized documents at scale. Con
 2. Replace `Code.gs` with the backend code
 3. Create `MailMergeApp.html` and paste the frontend code
 4. **Deploy → New Deployment → Web app**
-   - Execute as: Me
+   - Execute as: User accessing the web app
    - Who has access: Anyone (or within your organization)
 5. Open the deployment URL
 
