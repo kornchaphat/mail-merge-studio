@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mail Merge Studio</title>
+  <style>
+:root{--glass-bg:rgba(255,255,255,0.75);--glass-hover:rgba(255,255,255,0.88);--glass-border:rgba(255,255,255,0.5);--glass-shadow:0 8px 32px rgba(0,0,0,0.08);--blur:20px;--primary:#16a34a;--primary-light:rgba(22,163,74,0.12);--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;--text-1:#1D1D1F;--text-2:#6e6e73;--text-3:#aeaeb2;--divider:rgba(0,0,0,0.06);--r-sm:10px;--r-md:14px;--r-lg:20px;--r-xl:28px;--ease:cubic-bezier(0.25,0.46,0.45,0.94)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:linear-gradient(135deg,#16a34a 0%,#22c55e 20%,#ef4444 50%,#f87171 70%,#fbbf24 100%);background-size:400% 400%;animation:grad 20s ease infinite;min-height:100vh;color:var(--text-1);-webkit-font-smoothing:antialiased}
+@keyframes grad{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.5;pointer-events:none;z-index:0}
+.orb-1{width:600px;height:600px;background:radial-gradient(circle,rgba(22,163,74,.6) 0%,transparent 70%);top:-200px;left:-100px;animation:f1 15s ease-in-out infinite}
+.orb-2{width:500px;height:500px;background:radial-gradient(circle,rgba(239,68,68,.5) 0%,transparent 70%);bottom:-150px;right:-100px;animation:f2 18s ease-in-out infinite}
+@keyframes f1{0%,100%{transform:translate(0,0)}50%{transform:translate(50px,30px)}}
+@keyframes f2{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,-20px)}}
+.app{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 20px;min-height:100vh;display:flex;flex-direction:column}
+.header{text-align:center;margin-bottom:20px;animation:fadeDown .6s var(--ease)}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+.logo-icon{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:linear-gradient(135deg,var(--primary),var(--success));border-radius:16px;margin-bottom:10px;box-shadow:0 8px 24px rgba(22,163,74,0.35)}
+.logo-icon svg{width:28px;height:28px;fill:#fff}
+.app-title{font-size:22px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.15)}
+.app-sub{font-size:12px;color:rgba(255,255,255,.8)}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.preset-select{display:flex;align-items:center;gap:8px;background:var(--glass-bg);backdrop-filter:blur(var(--blur));padding:8px 14px;border-radius:var(--r-md);border:1px solid var(--glass-border);font-size:12px}
+.preset-select select{border:none;background:transparent;font-size:12px;font-family:inherit;color:var(--text-1);cursor:pointer;outline:none;min-width:140px}
+.preset-select button{background:none;border:none;color:var(--primary);cursor:pointer;font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;transition:all .2s}
+.preset-select button:hover{background:var(--primary-light)}
+.user-info{display:flex;align-items:center;gap:6px;background:var(--glass-bg);backdrop-filter:blur(var(--blur));padding:8px 14px;border-radius:var(--r-md);border:1px solid var(--glass-border);font-size:11px;color:var(--text-2)}
+.user-icon{font-size:12px}
+.user-email{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stepper-wrap{background:var(--glass-bg);backdrop-filter:blur(var(--blur));border-radius:var(--r-lg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);padding:16px 20px;margin-bottom:16px;position:relative;z-index:2}
+.stepper{display:flex;align-items:center;justify-content:space-between;position:relative}
+.stepper::before{content:'';position:absolute;top:16px;left:32px;right:32px;height:2px;background:rgba(0,0,0,.08);border-radius:1px}
+.stepper-progress{position:absolute;top:16px;left:32px;height:2px;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:1px;transition:width .5s var(--ease)}
+.step{display:flex;flex-direction:column;align-items:center;position:relative;z-index:2;cursor:pointer}
+.step-circle{width:32px;height:32px;border-radius:50%;background:#fff;border:2px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:var(--text-2);transition:all .3s var(--ease)}
+.step.active .step-circle{background:linear-gradient(135deg,var(--primary),var(--success));border-color:transparent;color:#fff;box-shadow:0 4px 12px rgba(22,163,74,.4)}
+.step.done .step-circle{background:var(--primary);border-color:transparent;color:#fff}
+.step.done .step-circle span{display:none}
+.step.done .step-circle::after{content:'✓';font-size:14px}
+.step-label{margin-top:4px;font-size:10px;font-weight:500;color:var(--text-3)}
+.step.active .step-label,.step.done .step-label{color:var(--primary)}
+.card{flex:1;background:var(--glass-bg);backdrop-filter:blur(var(--blur));border-radius:var(--r-xl);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);padding:28px;display:flex;flex-direction:column;animation:fadeUp .5s var(--ease);position:relative;z-index:1}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.step-content{display:none;flex:1;flex-direction:column}
+.step-content.active{display:flex;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.step-header{margin-bottom:20px}
+.step-title{font-size:18px;font-weight:700;color:var(--text-1);margin-bottom:4px}
+.step-desc{font-size:12px;color:var(--text-2)}
+.step-desc code{background:var(--primary-light);padding:1px 5px;border-radius:4px;color:var(--primary);font-size:11px}
+.section{margin-bottom:20px}
+.section-title{font-size:12px;font-weight:600;color:var(--text-1);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.upload-box{border:2px dashed rgba(22,163,74,.25);border-radius:var(--r-lg);padding:20px 14px;text-align:center;cursor:pointer;transition:all .3s var(--ease);background:rgba(22,163,74,.03)}
+.upload-box:hover{border-color:var(--primary);background:var(--primary-light);transform:translateY(-2px)}
+.upload-box.dragover{border-color:var(--primary);background:var(--primary-light)}
+.upload-icon{width:42px;height:42px;margin:0 auto 10px;background:linear-gradient(135deg,var(--primary),var(--success));border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 12px rgba(22,163,74,.25)}
+.upload-icon.drive{background:linear-gradient(135deg,#4285f4,#34a853)}
+.upload-icon.tpl{background:linear-gradient(135deg,#ef4444,#f87171)}
+.upload-title{font-size:13px;font-weight:600;color:var(--text-1)}
+.upload-sub{font-size:10px;color:var(--text-2);margin-top:2px}
+.badges{display:flex;gap:4px;justify-content:center;margin-top:6px}
+.badge{padding:2px 6px;background:rgba(0,0,0,.05);border-radius:8px;font-size:9px;font-weight:600;color:var(--text-2)}
+.url-input{margin-top:12px;display:none}
+.url-input.show{display:block;animation:fadeIn .2s ease}
+.url-row{display:flex;gap:6px}
+.url-row input{flex:1;padding:10px 12px;border:1px solid var(--divider);border-radius:var(--r-sm);font-size:12px;font-family:inherit;outline:none}
+.url-row input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.url-hint{font-size:10px;color:var(--text-3);margin-top:6px}
+.file-list{margin-top:12px}
+.file-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(22,163,74,.05);border-radius:var(--r-sm);margin-bottom:6px;border:1px solid rgba(22,163,74,.1)}
+.file-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--success),var(--primary));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.file-icon.tpl{background:linear-gradient(135deg,#ef4444,#f87171)}
+.file-info{flex:1;min-width:0}
+.file-name{font-size:12px;font-weight:600;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-meta{font-size:10px;color:var(--text-2)}
+.file-remove{width:26px;height:26px;border:none;background:rgba(239,68,68,.1);border-radius:50%;color:var(--danger);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
+.file-remove:hover{background:var(--danger);color:#fff}
+.data-config{background:rgba(0,0,0,.02);border-radius:var(--r-md);padding:14px;border:1px solid var(--divider);margin-top:14px}
+.config-row{display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.config-row:last-child{margin-bottom:0}
+.config-label{font-size:11px;font-weight:500;color:var(--text-2);min-width:100px}
+.config-row select{padding:6px 10px;border:1px solid var(--divider);border-radius:6px;font-size:11px;font-family:inherit;background:#fff}
+.config-row input[type="checkbox"]{accent-color:var(--primary)}
+.data-preview{margin-top:14px;border-radius:var(--r-md);border:1px solid var(--divider);overflow:hidden}
+.preview-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--divider)}
+.preview-title{font-size:12px;font-weight:600;color:var(--text-1)}
+.preview-meta{font-size:10px;color:var(--text-2)}
+.table-wrap{overflow-x:auto;max-height:180px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{background:rgba(0,0,0,.02);padding:7px 10px;text-align:left;font-weight:600;color:var(--text-1);border-bottom:1px solid var(--divider);white-space:nowrap;position:sticky;top:0}
+td{padding:7px 10px;border-bottom:1px solid var(--divider);color:var(--text-2);white-space:nowrap}
+tr:hover td{background:rgba(22,163,74,.03)}
+.filter-section{background:rgba(0,0,0,.02);border-radius:var(--r-md);padding:14px;border:1px solid var(--divider);margin-top:14px}
+.filter-toggle{display:flex;align-items:center;gap:8px;cursor:pointer}
+.filter-toggle input{display:none}
+.filter-check{width:18px;height:18px;border:2px solid var(--divider);border-radius:5px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.filter-toggle input:checked+.filter-check{background:var(--primary);border-color:var(--primary)}
+.filter-check::after{content:'✓';color:#fff;font-size:11px;opacity:0}
+.filter-toggle input:checked+.filter-check::after{opacity:1}
+.filter-label{font-size:12px;font-weight:500;color:var(--text-1)}
+.filter-count{font-size:11px;color:var(--text-2);margin-left:auto}
+.filter-rules{margin-top:12px;display:none}
+.filter-rules.show{display:block}
+.filter-rule{display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap}
+.filter-rule select,.filter-rule input{padding:7px 10px;border:1px solid var(--divider);border-radius:6px;font-size:11px;font-family:inherit}
+.filter-rule select{min-width:90px}
+.filter-rule input{flex:1;min-width:80px}
+.filter-rule .remove-rule{width:26px;height:26px;border:none;background:rgba(239,68,68,.1);border-radius:6px;color:var(--danger);cursor:pointer;font-size:12px;flex-shrink:0}
+.add-rule{font-size:11px;color:var(--primary);background:none;border:none;cursor:pointer;font-weight:600;padding:6px 0}
+.template-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.template-tab{display:flex;align-items:center;gap:6px;padding:8px 12px;background:#fff;border:2px solid var(--divider);border-radius:var(--r-sm);cursor:pointer;transition:all .2s;font-size:11px;font-weight:500;color:var(--text-2)}
+.template-tab:hover{border-color:rgba(22,163,74,.3)}
+.template-tab.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.template-tab .t-icon{font-size:14px}
+.template-tab .t-name{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rule-section{background:rgba(0,0,0,.02);border-radius:var(--r-md);padding:14px;border:1px solid var(--divider);margin-top:14px}
+.rule-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.rule-title{font-size:12px;font-weight:600;color:var(--text-1)}
+.rule-card{background:#fff;border:1px solid var(--divider);border-radius:var(--r-sm);padding:12px;margin-bottom:8px}
+.rule-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.rule-priority{display:flex;gap:4px}
+.rule-priority button{width:22px;height:22px;border:1px solid var(--divider);background:#fff;border-radius:4px;cursor:pointer;font-size:10px;color:var(--text-2)}
+.rule-priority button:hover{border-color:var(--primary);color:var(--primary)}
+.rule-conditions{margin-bottom:8px}
+.rule-condition{display:flex;gap:6px;margin-bottom:6px;align-items:center;flex-wrap:wrap}
+.rule-condition select,.rule-condition input{padding:5px 8px;border:1px solid var(--divider);border-radius:5px;font-size:10px;font-family:inherit}
+.rule-condition select{min-width:80px}
+.rule-condition input{flex:1;min-width:60px}
+.rule-template{display:flex;gap:8px;align-items:center;padding-top:8px;border-top:1px solid var(--divider)}
+.rule-template label{font-size:10px;color:var(--text-2)}
+.rule-template select{flex:1;padding:6px 8px;border:1px solid var(--divider);border-radius:5px;font-size:11px}
+.default-tpl{display:flex;gap:8px;align-items:center;padding:10px;background:rgba(251,191,36,.1);border-radius:var(--r-sm);margin-top:8px}
+.default-tpl label{font-size:11px;color:var(--text-1);font-weight:500}
+.default-tpl select{flex:1;padding:6px 8px;border:1px solid var(--divider);border-radius:5px;font-size:11px}
+.mapping-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0}
+.panel{display:flex;flex-direction:column;background:rgba(0,0,0,.02);border-radius:var(--r-md);padding:14px;border:1px solid var(--divider);min-height:0}
+.panel-header{display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--divider)}
+.panel-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--primary),var(--success));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.panel-icon.preview{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+.panel-title{font-size:12px;font-weight:600;color:var(--text-1)}
+.panel-sub{font-size:10px;color:var(--text-3);margin-left:auto}
+.mapping-list{flex:1;overflow-y:auto}
+.map-item{display:flex;align-items:center;gap:8px;padding:8px;background:#fff;border-radius:var(--r-sm);margin-bottom:5px;border:1px solid var(--divider)}
+.map-ph{font-family:'SF Mono',monospace;font-size:10px;color:var(--primary);background:var(--primary-light);padding:4px 6px;border-radius:4px;min-width:80px}
+.map-arrow{color:var(--text-3);font-size:12px}
+.map-select{flex:1;padding:6px 8px;border:1px solid var(--divider);border-radius:5px;font-size:11px;font-family:inherit;background:#fff;cursor:pointer;min-width:0}
+.map-select:focus{outline:none;border-color:var(--primary)}
+.map-status{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.map-status.ok{background:rgba(34,197,94,.15);color:var(--success)}
+.map-status.warn{background:rgba(245,158,11,.15);color:var(--warning)}
+.map-status.err{background:rgba(239,68,68,.15);color:var(--danger)}
+.tpl-preview{flex:1;background:#fff;border-radius:var(--r-sm);border:1px solid var(--divider);overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.preview-toolbar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--divider)}
+.preview-tabs{display:flex;gap:3px}
+.preview-tab{padding:4px 10px;border:none;background:transparent;font-size:11px;font-weight:500;color:var(--text-2);cursor:pointer;border-radius:5px;transition:all .2s;font-family:inherit}
+.preview-tab:hover{background:rgba(0,0,0,.04)}
+.preview-tab.active{background:var(--primary);color:#fff}
+.preview-nav{display:flex;align-items:center;gap:4px}
+.nav-btn{width:24px;height:24px;border:1px solid var(--divider);background:#fff;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text-2);transition:all .2s}
+.nav-btn:hover{border-color:var(--primary);color:var(--primary)}
+.nav-btn:disabled{opacity:.4;cursor:not-allowed}
+.nav-text{font-size:10px;color:var(--text-2)}
+.preview-body{flex:1;padding:14px;overflow-y:auto;font-size:12px;line-height:1.7;color:var(--text-1)}
+.preview-body .ph{background:var(--primary-light);color:var(--primary);padding:1px 4px;border-radius:3px;font-family:'SF Mono',monospace;font-size:10px}
+.preview-body .merged{background:rgba(139,92,246,.12);color:#7c3aed;padding:1px 4px;border-radius:3px;font-weight:500}
+.preview-body p{margin-bottom:8px}
+.preview-body table{border-collapse:collapse;width:100%;margin:8px 0}
+.preview-body table td,.preview-body table th{border:1px solid var(--divider);padding:4px 8px;font-size:11px}
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.config-box{background:rgba(0,0,0,.02);border-radius:var(--r-md);padding:14px;border:1px solid var(--divider)}
+.config-box.full{grid-column:1/-1}
+.config-title{font-size:12px;font-weight:600;color:var(--text-1);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.config-title span{font-size:14px}
+.tokens{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.token{padding:5px 10px;background:#fff;border:1px solid var(--divider);border-radius:12px;font-size:10px;font-weight:500;color:var(--text-1);cursor:pointer;transition:all .2s;font-family:inherit}
+.token:hover{border-color:var(--primary);color:var(--primary)}
+.token.special{background:linear-gradient(135deg,var(--primary),var(--success));color:#fff;border:none}
+.form-input{width:100%;padding:10px 12px;border:1px solid var(--divider);border-radius:var(--r-sm);font-size:12px;font-family:'SF Mono',monospace;background:#fff;outline:none}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+.filename-preview{margin-top:8px;padding:8px 12px;background:#fff;border-radius:var(--r-sm);font-size:11px;color:var(--text-2);border:1px solid var(--divider)}
+.opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opt-grid.col-2{grid-template-columns:1fr 1fr}
+.opt-card{padding:12px;background:#fff;border:2px solid var(--divider);border-radius:var(--r-sm);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
+.opt-card:hover{border-color:rgba(22,163,74,.3)}
+.opt-card.selected{border-color:var(--primary);background:rgba(22,163,74,.04)}
+.opt-card input{display:none}
+.opt-radio,.opt-check{width:16px;height:16px;border:2px solid var(--divider);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.opt-check{border-radius:4px}
+.opt-card.selected .opt-radio,.opt-card.selected .opt-check{border-color:var(--primary);background:var(--primary)}
+.opt-radio::after,.opt-check::after{content:'';width:6px;height:6px;background:#fff;border-radius:50%;opacity:0}
+.opt-check::after{content:'✓';font-size:10px;color:#fff;width:auto;height:auto}
+.opt-card.selected .opt-radio::after,.opt-card.selected .opt-check::after{opacity:1}
+.opt-icon{font-size:18px}
+.opt-content{flex:1;min-width:0}
+.opt-title{font-size:12px;font-weight:600;color:var(--text-1)}
+.opt-desc{font-size:9px;color:var(--text-2)}
+.drive-opts{margin-top:10px;padding:10px;background:#fff;border-radius:var(--r-sm);border:1px solid var(--divider)}
+.drive-opts.hidden{display:none}
+.radio-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px;cursor:pointer}
+.radio-row:last-child{margin-bottom:0}
+.radio-row input[type="radio"]{accent-color:var(--primary)}
+.radio-row input[type="text"]{flex:1;padding:6px 8px;border:1px solid var(--divider);border-radius:5px;font-size:11px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--divider)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-label{display:flex;align-items:center;gap:8px}
+.toggle-icon{font-size:16px}
+.toggle-text{font-size:12px;font-weight:500;color:var(--text-1)}
+.toggle-desc{font-size:10px;color:var(--text-2)}
+.toggle-switch{position:relative;width:40px;height:24px;background:rgba(0,0,0,.12);border-radius:12px;cursor:pointer;transition:all .3s;flex-shrink:0}
+.toggle-switch.on{background:var(--success)}
+.toggle-switch::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:2px;left:2px;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:all .3s}
+.toggle-switch.on::after{left:18px}
+.subfolder-config{margin-top:12px;display:none}
+.subfolder-config.show{display:block}
+.subfolder-levels{display:flex;flex-direction:column;gap:8px}
+.subfolder-level{display:flex;align-items:center;gap:8px;padding:10px;background:#fff;border:1px solid var(--divider);border-radius:var(--r-sm)}
+.subfolder-level-num{width:24px;height:24px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.subfolder-level select{flex:1;padding:8px 10px;border:1px solid var(--divider);border-radius:6px;font-size:12px;font-family:inherit}
+.subfolder-level .remove-level{width:28px;height:28px;border:none;background:rgba(239,68,68,.1);border-radius:6px;color:var(--danger);cursor:pointer;font-size:14px;flex-shrink:0}
+.subfolder-level .remove-level:hover{background:var(--danger);color:#fff}
+.subfolder-preview{margin-top:12px;padding:12px;background:rgba(22,163,74,.05);border:1px solid rgba(22,163,74,.2);border-radius:var(--r-sm);font-family:'SF Mono',monospace;font-size:11px;color:var(--text-2)}
+.subfolder-preview-title{font-size:10px;font-weight:600;color:var(--primary);margin-bottom:6px;font-family:inherit}
+.subfolder-preview-path{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.subfolder-preview-path span{padding:2px 6px;background:#fff;border-radius:4px;border:1px solid var(--divider)}
+
+.validation-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:var(--r-md);padding:14px;margin-bottom:16px}
+.validation-box.error{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)}
+.validation-box.success{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)}
+.validation-title{font-size:12px;font-weight:600;color:var(--warning);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.validation-box.error .validation-title{color:var(--danger)}
+.validation-box.success .validation-title{color:var(--success)}
+.validation-list{font-size:11px;color:var(--text-2)}
+.validation-list li{margin-bottom:4px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.summary-card{background:rgba(0,0,0,.02);border-radius:var(--r-md);padding:14px;text-align:center;border:1px solid var(--divider)}
+.summary-value{font-size:24px;font-weight:700;color:var(--text-1);line-height:1}
+.summary-label{font-size:10px;color:var(--text-2);margin-top:4px}
+.action-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.summary-preview{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.summary-section{background:#fff;border:1px solid var(--divider);border-radius:var(--r-md);padding:14px;overflow:hidden}
+.summary-section-title{font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--divider);text-transform:uppercase;letter-spacing:0.5px}
+.summary-section-content{display:flex;flex-direction:column;gap:8px}
+.summary-row{display:flex;flex-direction:column;gap:2px}
+.summary-row .summary-label{color:var(--text-2);font-size:10px}
+.summary-row .summary-value{color:var(--text-1);font-weight:500;font-size:12px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.btn-lg{padding:14px 32px;font-size:14px}
+.progress-section{margin-top:20px;display:none}
+.progress-section.show{display:block;animation:fadeIn .3s ease}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.progress-title{font-size:12px;font-weight:600;color:var(--text-1)}
+.progress-count{font-size:11px;color:var(--text-2)}
+.progress-bar{height:6px;background:rgba(0,0,0,.06);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:3px;transition:width .3s ease;width:0}
+.progress-log{margin-top:12px;max-height:140px;overflow-y:auto;padding:12px;background:rgba(0,0,0,.02);border-radius:var(--r-sm);font-family:'SF Mono',monospace;font-size:10px}
+.log-entry{padding:2px 0;color:var(--text-2)}
+.log-entry.success{color:var(--success)}
+.log-entry.error{color:var(--danger)}
+.results-section{margin-top:20px;display:none}
+.results-section.show{display:block;animation:fadeIn .3s ease}
+.results-header{text-align:center;margin-bottom:16px}
+.results-icon{font-size:48px;margin-bottom:8px}
+.results-title{font-size:18px;font-weight:700;color:var(--text-1)}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.results-card{background:#fff;border-radius:var(--r-md);padding:16px;text-align:center;border:1px solid var(--divider)}
+.results-card.success{border-color:rgba(34,197,94,.3)}
+.results-card.error{border-color:rgba(239,68,68,.3)}
+.results-num{font-size:28px;font-weight:700;color:var(--success)}
+.results-card.error .results-num{color:var(--danger)}
+.results-card .results-label{font-size:11px;color:var(--text-2);margin-top:2px}
+.error-details{margin-top:12px;padding:10px;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:var(--r-sm);max-height:100px;overflow-y:auto}
+.error-details.hidden{display:none}
+.error-details-title{font-size:11px;font-weight:600;color:var(--danger);margin-bottom:6px}
+.error-details-list{font-size:10px;color:var(--text-2);margin:0;padding-left:14px}
+.error-details-list li{margin-bottom:3px}
+.results-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.nav-btns{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:16px;border-top:1px solid var(--divider)}
+.btn{padding:10px 20px;border:none;border-radius:var(--r-sm);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .3s var(--ease);display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--success));color:#fff;box-shadow:0 4px 12px rgba(22,163,74,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(22,163,74,.4)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:rgba(0,0,0,.05);color:var(--text-1)}
+.btn-secondary:hover{background:rgba(0,0,0,.08)}
+.btn-ghost{background:transparent;color:var(--text-2);padding:10px 14px}
+.btn-ghost:hover{color:var(--text-1);background:rgba(0,0,0,.04)}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 12px;font-size:11px}
+.hidden{display:none}
+.loading{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:1000}
+.loading.show{display:flex}
+.loading-card{background:var(--glass-bg);backdrop-filter:blur(var(--blur));border-radius:var(--r-xl);padding:32px;text-align:center;box-shadow:var(--glass-shadow)}
+.spinner{width:40px;height:40px;border:3px solid rgba(22,163,74,.2);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;font-weight:500;color:var(--text-1)}
+.loading-sub{font-size:12px;color:var(--text-2);margin-top:4px}
+@media(max-width:768px){.app{padding:16px 12px}.card{padding:18px 14px}.stepper-wrap{padding:12px}.step-label{display:none}.upload-grid,.mapping-grid,.config-grid,.opt-grid,.summary-grid,.results-grid,.summary-preview{grid-template-columns:1fr}.opt-grid.col-2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="app">
+  <header class="header">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+    <h1 class="app-title">Mail Merge Studio</h1>
+    <p class="app-sub">East-West Seed HRIS V1.1.9</p>
+  </header>
+  <div class="top-bar">
+    <div class="preset-select">
+      <span>💾</span>
+      <select id="preset-list"><option value="">Load preset...</option></select>
+      <button onclick="savePreset()">Save</button>
+      <button onclick="deletePreset()">Delete</button>
+    </div>
+    <div class="user-info" id="user-info">
+      <span class="user-icon">👤</span>
+      <span class="user-email" id="user-email">Loading...</span>
+    </div>
+  </div>
+  <div class="stepper-wrap">
+    <div class="stepper">
+      <div class="stepper-progress" id="stepper-progress"></div>
+      <div class="step active" onclick="goToStep(1)"><div class="step-circle"><span>1</span></div><span class="step-label">Data</span></div>
+      <div class="step" onclick="goToStep(2)"><div class="step-circle"><span>2</span></div><span class="step-label">Templates</span></div>
+      <div class="step" onclick="goToStep(3)"><div class="step-circle"><span>3</span></div><span class="step-label">Mapping</span></div>
+      <div class="step" onclick="goToStep(4)"><div class="step-circle"><span>4</span></div><span class="step-label">Config</span></div>
+      <div class="step" onclick="goToStep(5)"><div class="step-circle"><span>5</span></div><span class="step-label">Generate</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <!-- Step 1: Data Source -->
+    <div class="step-content active" id="step-1">
+      <div class="step-header"><h2 class="step-title">📊 Select Data Source</h2><p class="step-desc">Upload spreadsheet or link from Google Drive</p></div>
+      <div class="section">
+        <div class="upload-grid">
+          <div class="upload-box" id="data-drop"><div class="upload-icon">📤</div><p class="upload-title">Upload File</p><p class="upload-sub">Drop or browse</p><div class="badges"><span class="badge">XLSX</span><span class="badge">CSV</span></div><input type="file" class="hidden" id="data-input" accept=".xlsx,.xls,.csv"></div>
+          <div class="upload-box" id="data-url-box" onclick="toggleUrl('data')"><div class="upload-icon drive">🔗</div><p class="upload-title">From Google Drive</p><p class="upload-sub">Paste Sheet URL</p><div class="badges"><span class="badge">Google Sheets</span></div></div>
+        </div>
+        <div class="url-input" id="data-url-wrap"><div class="url-row"><input type="text" id="data-url" placeholder="Paste Google Sheets URL..."><button class="btn btn-primary btn-sm" onclick="loadUrl('data')">Load</button><button class="btn btn-ghost btn-sm" onclick="toggleUrl('data')">✕</button></div><p class="url-hint">💡 You must have access to view this file</p></div>
+      </div>
+      <div class="file-list" id="data-files"></div>
+      <!-- Data Config: Header Row + Remove Blanks -->
+      <div class="data-config hidden" id="data-config">
+        <div class="config-row">
+          <span class="config-label">Header row:</span>
+          <select id="header-row-select" onchange="setHeaderRow(this.value)"></select>
+        </div>
+        <div class="config-row">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="remove-blanks-check" onchange="toggleRemoveBlanks()">
+            <span style="font-size:11px;color:var(--text-2)">Remove rows where</span>
+          </label>
+          <select id="remove-blanks-col" onchange="applyDataProcessing()" disabled></select>
+          <span style="font-size:11px;color:var(--text-2)">is blank</span>
+        </div>
+      </div>
+      <div class="data-preview hidden" id="data-preview"><div class="preview-header"><span class="preview-title">📋 Preview</span><span class="preview-meta"><span id="row-count">0</span> of <span id="total-rows">0</span> rows • <span id="col-count">0</span> cols</span></div><div class="table-wrap"><table id="data-table"><thead></thead><tbody></tbody></table></div></div>
+      <!-- Filter Section with 10 Operators -->
+      <div class="filter-section hidden" id="filter-section">
+        <label class="filter-toggle"><input type="checkbox" id="filter-enabled" onchange="toggleFilter()"><span class="filter-check"></span><span class="filter-label">Filter rows</span><span class="filter-count" id="filter-count"></span></label>
+        <div class="filter-rules" id="filter-rules"><div id="filter-list"></div><button class="add-rule" onclick="addFilterRule()">+ Add condition</button></div>
+      </div>
+      <div class="nav-btns"><div></div><button class="btn btn-primary" onclick="nextStep()" id="next-1" disabled>Next →</button></div>
+    </div>
+    <!-- Step 2: Templates + Rules -->
+    <div class="step-content" id="step-2">
+      <div class="step-header"><h2 class="step-title">📝 Select Templates</h2><p class="step-desc">Upload templates with <code>{{placeholder}}</code> fields</p></div>
+      <div class="section">
+        <div class="upload-grid">
+          <div class="upload-box" id="tpl-drop"><div class="upload-icon tpl">📤</div><p class="upload-title">Upload Template</p><p class="upload-sub">Drop or browse</p><div class="badges"><span class="badge">DOCX</span><span class="badge">PPTX</span></div><input type="file" class="hidden" id="tpl-input" accept=".docx,.pptx" multiple></div>
+          <div class="upload-box" id="tpl-url-box" onclick="toggleUrl('tpl')"><div class="upload-icon drive">🔗</div><p class="upload-title">From Google Drive</p><p class="upload-sub">Paste Doc or Slides URL</p><div class="badges"><span class="badge">Docs</span><span class="badge">Slides</span></div></div>
+        </div>
+        <div class="url-input" id="tpl-url-wrap"><div class="url-row"><input type="text" id="tpl-url" placeholder="Paste Google Docs or Slides URL..."><button class="btn btn-primary btn-sm" onclick="loadUrl('tpl')">Load</button><button class="btn btn-ghost btn-sm" onclick="toggleUrl('tpl')">✕</button></div><p class="url-hint">💡 You must have access to view this file</p></div>
+      </div>
+      <div class="file-list" id="tpl-files"></div>
+      <!-- Template Assignment Rules -->
+      <div class="rule-section hidden" id="rule-section">
+        <div class="rule-header">
+          <span class="rule-title">📋 Template Assignment Rules</span>
+          <button class="btn btn-sm btn-secondary" onclick="addRule()">+ Add Rule</button>
+        </div>
+        <div id="rules-list"></div>
+        <div class="default-tpl">
+          <label>⚡ Default template (when no rule matches):</label>
+          <select id="default-tpl" onchange="S.defaultTemplate=this.value"></select>
+        </div>
+      </div>
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="nextStep()" id="next-2" disabled>Next →</button></div>
+    </div>
+    <!-- Step 3: Mapping -->
+    <div class="step-content" id="step-3">
+      <div class="step-header"><h2 class="step-title">🔗 Map Fields & Preview</h2><p class="step-desc">Connect placeholders to data columns</p></div>
+      <div class="template-tabs" id="tpl-tabs"></div>
+      <div class="mapping-grid">
+        <div class="panel"><div class="panel-header"><div class="panel-icon">🔗</div><span class="panel-title">Field Mapping</span><span class="panel-sub" id="map-tpl-name"></span></div><div class="mapping-list" id="mapping-list"></div></div>
+        <div class="panel"><div class="panel-header"><div class="panel-icon preview">👁️</div><span class="panel-title">Preview</span></div>
+          <div class="tpl-preview"><div class="preview-toolbar"><div class="preview-tabs"><button class="preview-tab active" onclick="setPreviewMode('raw',this)">Template</button><button class="preview-tab" onclick="setPreviewMode('merged',this)">Merged</button></div><div class="preview-nav"><button class="nav-btn" onclick="prevRow()" id="prev-btn">◀</button><span class="nav-text">Row <span id="row-num">1</span>/<span id="row-total">0</span></span><button class="nav-btn" onclick="nextRow()" id="next-btn">▶</button></div></div><div class="preview-body" id="preview-body"></div></div>
+        </div>
+      </div>
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="nextStep()">Next →</button></div>
+    </div>
+    <!-- Step 4: Config -->
+    <div class="step-content" id="step-4">
+      <div class="step-header"><h2 class="step-title">⚙️ Configure Output</h2><p class="step-desc">Filename, format, delivery options</p></div>
+      <div class="config-grid">
+        <div class="config-box full">
+          <div class="config-title"><span>📄</span> Filename Pattern</div>
+          <div class="tokens" id="tokens"><button class="token special" onclick="addToken('{{Year}}')">Year</button><button class="token special" onclick="addToken('{{Date}}')">Date</button><button class="token special" onclick="addToken('{{Counter}}')">Counter</button></div>
+          <input type="text" class="form-input" id="filename" value="{{Year}}_Document_{{Counter}}" oninput="updateFilenamePreview()">
+          <div class="filename-preview"><strong>Preview:</strong> <span id="filename-preview">2026_Document_001.pdf</span></div>
+        </div>
+        <div class="config-box">
+          <div class="config-title"><span>📁</span> Output Format</div>
+          <div class="opt-grid" id="format-opts">
+            <label class="opt-card selected"><input type="radio" name="format" value="pdf" checked><span class="opt-radio"></span><span class="opt-icon">📕</span><div class="opt-content"><span class="opt-title">PDF</span></div></label>
+            <label class="opt-card"><input type="radio" name="format" value="docx"><span class="opt-radio"></span><span class="opt-icon">📘</span><div class="opt-content"><span class="opt-title">DOCX</span></div></label>
+            <label class="opt-card"><input type="radio" name="format" value="both"><span class="opt-radio"></span><span class="opt-icon">📚</span><div class="opt-content"><span class="opt-title">Both</span></div></label>
+          </div>
+        </div>
+        <div class="config-box">
+          <div class="config-title"><span>📦</span> Delivery</div>
+          <div class="opt-grid col-2" id="delivery-opts">
+            <label class="opt-card selected"><input type="checkbox" name="delivery" value="drive" checked><span class="opt-check"></span><span class="opt-icon">☁️</span><div class="opt-content"><span class="opt-title">Drive</span></div></label>
+            <label class="opt-card"><input type="checkbox" name="delivery" value="zip"><span class="opt-check"></span><span class="opt-icon">💾</span><div class="opt-content"><span class="opt-title">ZIP</span></div></label>
+          </div>
+          <div class="drive-opts" id="drive-opts">
+            <label class="radio-row"><input type="radio" name="drive-dest" value="auto" checked onchange="toggleDriveOpts()"> Create new folder (auto-named)</label>
+            <label class="radio-row"><input type="radio" name="drive-dest" value="custom" onchange="toggleDriveOpts()"> Use existing folder:</label>
+            <input type="text" id="custom-folder-url" class="hidden" placeholder="Paste Drive folder URL..." style="margin-top:6px;width:100%">
+          </div>
+        </div>
+        <div class="config-box full">
+          <div class="config-title"><span>📁</span> Folder Organization</div>
+          <div class="toggle-row" style="border:none;padding:0">
+            <div class="toggle-label"><span class="toggle-icon">🗂️</span><div><span class="toggle-text">Organize into subfolders</span><span class="toggle-desc"> - Group files by column values</span></div></div>
+            <div class="toggle-switch" id="subfolder-toggle" onclick="toggleSubfolders()"></div>
+          </div>
+          <div class="subfolder-config" id="subfolder-config">
+            <div class="subfolder-levels" id="subfolder-levels"></div>
+            <button class="add-rule" id="add-level-btn" onclick="addSubfolderLevel()" style="margin-top:8px">+ Add Level</button>
+            <div class="subfolder-preview" id="subfolder-preview"></div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep()">← Back</button><button class="btn btn-primary" onclick="nextStep()">Next →</button></div>
+    </div>
+    <!-- Step 5: Generate -->
+    <div class="step-content" id="step-5">
+      <div class="step-header"><h2 class="step-title">🚀 Review & Generate</h2><p class="step-desc">Review your settings and start generation</p></div>
+      
+      <!-- Comprehensive Summary Preview -->
+      <div class="summary-preview" id="summary-preview">
+        <div class="summary-section">
+          <div class="summary-section-title">📊 Data Source</div>
+          <div class="summary-section-content">
+            <div class="summary-row"><span class="summary-label">File:</span><span class="summary-value" id="sum-data-file">-</span></div>
+            <div class="summary-row"><span class="summary-label">Rows:</span><span class="summary-value" id="sum-rows">-</span></div>
+            <div class="summary-row"><span class="summary-label">Columns:</span><span class="summary-value" id="sum-cols">-</span></div>
+          </div>
+        </div>
+        <div class="summary-section">
+          <div class="summary-section-title">📝 Template</div>
+          <div class="summary-section-content">
+            <div class="summary-row"><span class="summary-label">File(s):</span><span class="summary-value" id="sum-tpl-files">-</span></div>
+            <div class="summary-row"><span class="summary-label">Placeholders:</span><span class="summary-value" id="sum-placeholders">-</span></div>
+            <div class="summary-row"><span class="summary-label">Mapping:</span><span class="summary-value" id="sum-mapping">-</span></div>
+          </div>
+        </div>
+        <div class="summary-section">
+          <div class="summary-section-title">⚙️ Output Settings</div>
+          <div class="summary-section-content">
+            <div class="summary-row"><span class="summary-label">Filename:</span><span class="summary-value" id="sum-filename">-</span></div>
+            <div class="summary-row"><span class="summary-label">Format:</span><span class="summary-value" id="sum-format">-</span></div>
+            <div class="summary-row"><span class="summary-label">Delivery:</span><span class="summary-value" id="sum-delivery">-</span></div>
+            <div class="summary-row" id="sum-subfolder-row" style="display:none"><span class="summary-label">Subfolders:</span><span class="summary-value" id="sum-subfolders">-</span></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Validation Box -->
+      <div class="validation-box" id="validation-box"><div class="validation-title">⚠️ Validation</div><ul class="validation-list" id="validation-list"></ul></div>
+      
+      <!-- Generate Button -->
+      <div class="action-btns" id="action-btns">
+        <button class="btn btn-primary btn-lg" onclick="startGen()" id="start-btn">🚀 Generate <span id="gen-count">0</span> Documents</button>
+      </div>
+      
+      <!-- Progress Section -->
+      <div class="progress-section" id="progress-section">
+        <div class="progress-header"><span class="progress-title" id="progress-title">Generating...</span><span class="progress-count"><span id="p-cur">0</span>/<span id="p-total">0</span></span></div>
+        <div class="progress-bar"><div class="progress-fill" id="p-fill"></div></div>
+        <div class="progress-log" id="p-log"></div>
+        <div style="text-align:center;margin-top:12px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-secondary" id="open-folder-progress" onclick="openFolder()" style="display:none">📁 Open Folder</button>
+          <button class="btn btn-danger" id="cancel-btn" onclick="cancelGen()">Cancel</button>
+        </div>
+      </div>
+      
+      <!-- Results Section -->
+      <div class="results-section" id="results-section">
+        <div class="results-header"><div class="results-icon" id="results-icon">✅</div><div class="results-title" id="results-title">Generation Complete!</div></div>
+        <div class="results-grid">
+          <div class="results-card success"><div class="results-num" id="r-success">0</div><div class="results-label">Successful</div></div>
+          <div class="results-card error"><div class="results-num" id="r-failed">0</div><div class="results-label">Failed</div></div>
+          <div class="results-card"><div class="results-num" id="r-time">0s</div><div class="results-label">Duration</div></div>
+        </div>
+        <div class="error-details hidden" id="error-details">
+          <div class="error-details-title">❌ Failed Rows</div>
+          <ul class="error-details-list" id="error-list"></ul>
+        </div>
+        <div class="results-actions">
+          <button class="btn btn-secondary" id="open-folder-btn" onclick="openFolder()">📁 Open Folder</button>
+          <button class="btn btn-secondary" id="download-zip-btn" onclick="downloadZip()">📥 Download ZIP</button>
+          <button class="btn btn-secondary" onclick="viewLog()">📋 View Log</button>
+          <button class="btn btn-danger" id="retry-btn" onclick="retryFailed()" style="display:none">🔄 Retry Failed</button>
+        </div>
+        <div style="text-align:center;margin-top:16px"><button class="btn btn-ghost" onclick="resetApp()">🆕 Start New Merge</button></div>
+      </div>
+      
+      <div class="nav-btns"><button class="btn btn-ghost" onclick="prevStep()">← Back</button><div></div></div>
+    </div>
+  </div>
+</div>
+<div class="loading" id="loading"><div class="loading-card"><div class="spinner"></div><p class="loading-text" id="loading-text">Processing...</p><p class="loading-sub" id="loading-sub">Please wait</p><div class="loading-progress-wrap" id="loading-progress-wrap" style="display:none;margin-top:12px;width:200px"><div style="height:4px;background:rgba(0,0,0,.1);border-radius:2px;overflow:hidden"><div class="loading-progress-bar" id="loading-progress-bar"></div></div></div></div></div>
+<style>.loading-progress-bar{height:100%;width:30%;background:linear-gradient(90deg,var(--primary),var(--success));border-radius:2px;animation:indeterminate 1.5s ease-in-out infinite}@keyframes indeterminate{0%{margin-left:0;width:30%}50%{margin-left:35%;width:30%}100%{margin-left:70%;width:30%}}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+// ==================== SHARED OPERATORS (10 options) ====================
+const OPERATORS=[
+  {value:'equals',label:'equals'},
+  {value:'not_equals',label:'not equals'},
+  {value:'contains',label:'contains'},
+  {value:'not_contains',label:'not contains'},
+  {value:'starts_with',label:'starts with'},
+  {value:'ends_with',label:'ends with'},
+  {value:'is_blank',label:'is blank'},
+  {value:'is_not_blank',label:'is not blank'},
+  {value:'greater_than',label:'greater than'},
+  {value:'less_than',label:'less than'}
+];
+const NO_VALUE_OPS=['is_blank','is_not_blank'];
+const BATCH_SIZE=10; // Process 10 rows per batch
+
+// ==================== STATE ====================
+const S={
+  step:1,
+  dataFile:null,
+  rawData:[],
+  headerRowIndex:0,
+  headers:[],
+  dataRows:[],
+  processedRows:[],
+  removeBlankCol:'',
+  filterRules:[],
+  templates:[],
+  rules:[],
+  defaultTemplate:'',
+  selectedTpl:0,
+  mapping:{},
+  previewMode:'raw',
+  previewRow:0,
+  config:{
+    filename:'{{Year}}_Document_{{Counter}}',
+    format:'pdf',
+    delivery:['drive'],
+    driveDest:'auto',
+    customFolderUrl:'',
+    subfolders:false,
+    subfolderLevels:[],
+    generateLog:true,
+    replaceExisting:true
+  },
+  generating:false,
+  cancelled:false,
+  currentBatch:0,
+  totalBatches:0,
+  processedCount:0,
+  outputFolderId:null,
+  outputFolderUrl:null,
+  sessionId:null,
+  results:{success:0,failed:0,failedRows:[],files:[],startTime:0,durationSec:0}
+};
+
+// ==================== EXIT WARNING ====================
+function onBeforeUnload(e){
+  if(S.generating){
+    e.preventDefault();
+    e.returnValue='Documents are still being generated. Are you sure you want to leave?';
+    return e.returnValue;
+  }
+}
+window.addEventListener('beforeunload',onBeforeUnload);
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded',()=>{
+  initUploads();
+  initOpts();
+  loadPresets();
+  loadCurrentUser();
+  updateFilenamePreview();
+});
+
+function loadCurrentUser(){
+  google.script.run
+    .withSuccessHandler(function(user){
+      if(user&&user.email){
+        document.getElementById('user-email').textContent=user.email;
+      }else{
+        document.getElementById('user-info').style.display='none';
+      }
+    })
+    .withFailureHandler(function(){
+      document.getElementById('user-info').style.display='none';
+    })
+    .getCurrentUser();
+}
+
+function initUploads(){
+  const dd=document.getElementById('data-drop'),di=document.getElementById('data-input');
+  dd.onclick=()=>di.click();
+  dd.ondragover=e=>{e.preventDefault();dd.classList.add('dragover')};
+  dd.ondragleave=()=>dd.classList.remove('dragover');
+  dd.ondrop=e=>{e.preventDefault();dd.classList.remove('dragover');handleDataFile(e.dataTransfer.files[0])};
+  di.onchange=e=>handleDataFile(e.target.files[0]);
+  const td=document.getElementById('tpl-drop'),ti=document.getElementById('tpl-input');
+  td.onclick=()=>ti.click();
+  td.ondragover=e=>{e.preventDefault();td.classList.add('dragover')};
+  td.ondragleave=()=>td.classList.remove('dragover');
+  td.ondrop=e=>{e.preventDefault();td.classList.remove('dragover');handleTplFiles(e.dataTransfer.files)};
+  ti.onchange=e=>handleTplFiles(e.target.files);
+}
+
+function initOpts(){
+  document.querySelectorAll('.opt-card').forEach(c=>{
+    c.onclick=function(e){
+      const i=this.querySelector('input');
+      if(i.type==='radio'){
+        document.querySelectorAll(`input[name="${i.name}"]`).forEach(r=>r.closest('.opt-card').classList.remove('selected'));
+        this.classList.add('selected');i.checked=true;
+        if(i.name==='format'){S.config.format=i.value;updateFilenamePreview()}
+      }else{
+        // For checkboxes: browser already toggles when clicking label
+        // Use setTimeout to read the final state after browser handles click
+        setTimeout(()=>{
+          this.classList.toggle('selected',i.checked);
+          updateDelivery();
+        },0);
+      }
+    }
+  });
+}
+
+// ==================== NAVIGATION ====================
+function goToStep(n){
+  if(n>S.step+1||n<1||n>5)return;
+  if(n>S.step&&!validate())return;
+  S.step=n;updateStepper();
+  document.querySelectorAll('.step-content').forEach((c,i)=>c.classList.toggle('active',i+1===n));
+  if(n===3)initMapping();
+  if(n===4)initConfig();
+  if(n===5)initGenerate();
+}
+function nextStep(){goToStep(S.step+1)}
+function prevStep(){goToStep(S.step-1)}
+
+function validate(){
+  if(S.step===1&&S.processedRows.length===0){alert('Please upload data with at least one row');return false}
+  if(S.step===2&&!S.templates.length){alert('Please upload at least one template');return false}
+  return true;
+}
+
+function updateStepper(){
+  document.querySelectorAll('.step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i+1===S.step)s.classList.add('active');
+    else if(i+1<S.step)s.classList.add('done');
+  });
+  document.getElementById('stepper-progress').style.width=((S.step-1)/4*100)+'%';
+}
+
+// ==================== DATA HANDLING ====================
+async function handleDataFile(f){
+  if(!f)return;
+  showLoading('Reading spreadsheet...');
+  try{
+    const d=await f.arrayBuffer(),wb=XLSX.read(d,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],json=XLSX.utils.sheet_to_json(ws,{header:1});
+    if(json.length<2)throw new Error('Need at least 2 rows');
+    S.dataFile={name:f.name,local:true};
+    S.rawData=json;
+    S.headerRowIndex=0;
+    S.removeBlankCol='';
+    S.filterRules=[];
+    document.getElementById('filter-enabled').checked=false;
+    document.getElementById('filter-rules').classList.remove('show');
+    populateHeaderRowSelect();
+    applyDataProcessing();
+    document.getElementById('data-files').innerHTML=`<div class="file-item"><div class="file-icon">📊</div><div class="file-info"><div class="file-name">${f.name}</div><div class="file-meta">${S.rawData.length} total rows</div></div><button class="file-remove" onclick="removeData()">×</button></div>`;
+    document.getElementById('data-config').classList.remove('hidden');
+    hideLoading();
+  }catch(e){hideLoading();alert('Error: '+e.message)}
+}
+
+function populateHeaderRowSelect(){
+  const sel=document.getElementById('header-row-select');
+  sel.innerHTML=S.rawData.slice(0,10).map((r,i)=>{
+    const preview=(r||[]).slice(0,3).map(c=>String(c||'')).join(', ').substring(0,40);
+    return `<option value="${i}">Row ${i+1}: ${preview||'(empty)'}</option>`;
+  }).join('');
+  sel.value=S.headerRowIndex;
+}
+
+function setHeaderRow(idx){
+  S.headerRowIndex=parseInt(idx);
+  applyDataProcessing();
+}
+
+function toggleRemoveBlanks(){
+  const chk=document.getElementById('remove-blanks-check');
+  const sel=document.getElementById('remove-blanks-col');
+  sel.disabled=!chk.checked;
+  if(!chk.checked)S.removeBlankCol='';
+  applyDataProcessing();
+}
+
+function applyDataProcessing(){
+  const headerRow=S.rawData[S.headerRowIndex]||[];
+  S.headers=headerRow.map(h=>String(h||'').trim()).filter(h=>h);
+  S.dataRows=S.rawData.slice(S.headerRowIndex+1).filter(r=>r&&r.some(c=>c!==undefined&&c!==''));
+  
+  const blankSel=document.getElementById('remove-blanks-col');
+  blankSel.innerHTML='<option value="">Select column...</option>'+S.headers.map(h=>`<option value="${h}"${S.removeBlankCol===h?' selected':''}>${h}</option>`).join('');
+  blankSel.onchange=function(){S.removeBlankCol=this.value;applyDataProcessing()};
+  
+  let rows=[...S.dataRows];
+  if(S.removeBlankCol){
+    const idx=S.headers.indexOf(S.removeBlankCol);
+    if(idx>=0)rows=rows.filter(r=>r[idx]!==undefined&&r[idx]!=='');
+  }
+  if(document.getElementById('filter-enabled').checked&&S.filterRules.length){
+    rows=rows.filter(row=>S.filterRules.every(rule=>evaluateCondition(rule,row)));
+  }
+  S.processedRows=rows;
+  updateDataUI();
+}
+
+function evaluateCondition(rule,row){
+  if(!rule.col)return true;
+  const idx=S.headers.indexOf(rule.col);
+  if(idx<0)return true;
+  const val=String(row[idx]||'').toLowerCase();
+  const test=(rule.val||'').toLowerCase();
+  switch(rule.op){
+    case'equals':return val===test;
+    case'not_equals':return val!==test;
+    case'contains':return val.includes(test);
+    case'not_contains':return!val.includes(test);
+    case'starts_with':return val.startsWith(test);
+    case'ends_with':return val.endsWith(test);
+    case'is_blank':return!val;
+    case'is_not_blank':return!!val;
+    case'greater_than':return parseFloat(val)>parseFloat(test);
+    case'less_than':return parseFloat(val)<parseFloat(test);
+  }
+  return true;
+}
+
+function updateDataUI(){
+  const t=document.getElementById('data-table');
+  t.querySelector('thead').innerHTML='<tr>'+S.headers.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+  t.querySelector('tbody').innerHTML=S.processedRows.slice(0,5).map(r=>'<tr>'+S.headers.map((_,i)=>`<td>${r[i]||''}</td>`).join('')+'</tr>').join('');
+  document.getElementById('row-count').textContent=S.processedRows.length;
+  document.getElementById('total-rows').textContent=S.dataRows.length;
+  document.getElementById('col-count').textContent=S.headers.length;
+  document.getElementById('data-preview').classList.remove('hidden');
+  document.getElementById('filter-section').classList.remove('hidden');
+  document.getElementById('filter-count').textContent=S.processedRows.length!==S.dataRows.length?`${S.processedRows.length} of ${S.dataRows.length} rows`:'';
+  document.getElementById('next-1').disabled=S.processedRows.length===0;
+  populateColumnSelects();
+}
+
+function removeData(){
+  S.dataFile=null;S.rawData=[];S.headers=[];S.dataRows=[];S.processedRows=[];
+  document.getElementById('data-files').innerHTML='';
+  document.getElementById('data-config').classList.add('hidden');
+  document.getElementById('data-preview').classList.add('hidden');
+  document.getElementById('filter-section').classList.add('hidden');
+  document.getElementById('next-1').disabled=true;
+}
+
+function getActiveRows(){return S.processedRows}
+
+function toggleUrl(type){
+  const w=document.getElementById(type+'-url-wrap');
+  w.classList.toggle('show');
+  if(w.classList.contains('show'))document.getElementById(type+'-url').focus();
+}
+
+function extractFileId(url){
+  let m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if(m)return m[1];
+  m=url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  return m?m[1]:null;
+}
+
+function loadUrl(type){
+  const url=document.getElementById(type+'-url').value.trim();
+  if(!url){alert('Please paste a URL');return}
+  const fid=extractFileId(url);
+  if(!fid){alert('Invalid URL format');return}
+  showLoading('Loading from Drive...');
+  if(type==='data'){
+    google.script.run.withSuccessHandler(r=>{
+      hideLoading();
+      if(r.success){
+        S.dataFile={name:r.sheetName||'Google Sheet',id:fid,fromDrive:true};
+        S.rawData=[r.headers,...r.rows];
+        S.headerRowIndex=0;
+        S.removeBlankCol='';
+        S.filterRules=[];
+        document.getElementById('filter-enabled').checked=false;
+        document.getElementById('filter-rules').classList.remove('show');
+        populateHeaderRowSelect();
+        applyDataProcessing();
+        document.getElementById('data-files').innerHTML=`<div class="file-item"><div class="file-icon">📊</div><div class="file-info"><div class="file-name">${r.sheetName||'Google Sheet'}</div><div class="file-meta">${S.rawData.length} total rows</div></div><button class="file-remove" onclick="removeData()">×</button></div>`;
+        document.getElementById('data-config').classList.remove('hidden');
+        toggleUrl('data');
+      }else alert('Error: '+r.error);
+    }).withFailureHandler(e=>{hideLoading();alert('Error: '+e.message)}).readSpreadsheetData(fid);
+  }else{
+    google.script.run.withSuccessHandler(r=>{
+      hideLoading();
+      if(r.success){
+        if(S.templates.find(t=>t.id===fid)){alert('Template already added');return}
+        S.templates.push({id:fid,name:r.name,type:r.type||'doc',content:r.content||'',htmlContent:r.htmlContent||'',placeholders:r.placeholders||[],fromDrive:true});
+        updateTplUI();
+        document.getElementById('tpl-url').value='';
+      }else alert('Error: '+r.error);
+    }).withFailureHandler(e=>{hideLoading();alert('Error: '+e.message)}).getTemplateById(fid);
+  }
+}
+
+// ==================== FILTERING ====================
+function toggleFilter(){
+  const on=document.getElementById('filter-enabled').checked;
+  document.getElementById('filter-rules').classList.toggle('show',on);
+  if(on&&!S.filterRules.length)addFilterRule();
+  applyDataProcessing();
+}
+
+function addFilterRule(){
+  S.filterRules.push({col:S.headers[0]||'',op:'equals',val:''});
+  renderFilterRules();
+}
+
+function removeFilterRule(i){
+  S.filterRules.splice(i,1);
+  renderFilterRules();
+  applyDataProcessing();
+}
+
+function renderFilterRules(){
+  document.getElementById('filter-list').innerHTML=S.filterRules.map((r,i)=>`
+    <div class="filter-rule">
+      <select onchange="S.filterRules[${i}].col=this.value;applyDataProcessing()">${S.headers.map(h=>`<option value="${h}"${r.col===h?' selected':''}>${h}</option>`).join('')}</select>
+      <select onchange="S.filterRules[${i}].op=this.value;updateFilterValueField(${i});applyDataProcessing()">${OPERATORS.map(o=>`<option value="${o.value}"${r.op===o.value?' selected':''}>${o.label}</option>`).join('')}</select>
+      <input type="text" id="fv-${i}" value="${r.val||''}" onchange="S.filterRules[${i}].val=this.value;applyDataProcessing()" placeholder="Value..." ${NO_VALUE_OPS.includes(r.op)?'disabled style="opacity:0.5"':''}>
+      <button class="remove-rule" onclick="removeFilterRule(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function updateFilterValueField(i){
+  const inp=document.getElementById('fv-'+i);
+  if(!inp)return;
+  const disabled=NO_VALUE_OPS.includes(S.filterRules[i].op);
+  inp.disabled=disabled;
+  inp.style.opacity=disabled?'0.5':'1';
+  if(disabled){S.filterRules[i].val='';inp.value=''}
+}
+
+// ==================== TEMPLATES ====================
+async function handleTplFiles(files){
+  for(const f of Array.from(files)){
+    if(S.templates.find(t=>t.name===f.name))continue;
+    
+    // Check file extension
+    var ext=f.name.split('.').pop().toLowerCase();
+    
+    if(ext==='pptx'){
+      // For PPTX, suggest using Google Drive URL
+      alert('For PowerPoint files, please upload to Google Drive first, then use "From Google Drive" option with the Slides URL.\n\nThis ensures proper placeholder detection and formatting.');
+      continue;
+    }
+    
+    showLoading('Reading: '+f.name);
+    try{
+      const{text,html}=await readDocx(f);
+      const phs=extractPH(text);
+      S.templates.push({id:'t'+Date.now()+Math.random().toString(36).substr(2,5),name:f.name,type:'doc',file:f,content:text,htmlContent:html,placeholders:phs});
+    }catch(e){console.error(e)}
+  }
+  hideLoading();
+  updateTplUI();
+}
+
+async function readDocx(f){
+  try{
+    const ab=await f.arrayBuffer();
+    const textRes=await mammoth.extractRawText({arrayBuffer:ab});
+    const htmlRes=await mammoth.convertToHtml({arrayBuffer:ab});
+    return{text:textRes.value||'',html:htmlRes.value||''};
+  }catch(e){return{text:'[Error reading file]',html:'<p>[Error reading file]</p>'}}
+}
+
+function extractPH(c){const r=/\{\{([^}]+)\}\}/g,a=[];let m;while((m=r.exec(c))!==null)if(!a.includes(m[1]))a.push(m[1]);return a}
+
+function updateTplUI(){
+  document.getElementById('tpl-files').innerHTML=S.templates.map(t=>{
+    var icon=t.type==='slides'?'📊':'📝';
+    var typeLabel=t.type==='slides'?'Slides':'Doc';
+    return `<div class="file-item"><div class="file-icon tpl">${icon}</div><div class="file-info"><div class="file-name">${t.name}</div><div class="file-meta">${typeLabel} • ${t.placeholders.length} placeholders</div></div><button class="file-remove" onclick="removeTpl('${t.id}')">×</button></div>`;
+  }).join('');
+  document.getElementById('next-2').disabled=!S.templates.length;
+  var ruleSection=document.getElementById('rule-section');
+  // Show rules section even for 1 template (can filter rows or prepare for more templates)
+  if(S.templates.length>=1){
+    ruleSection.classList.remove('hidden');
+    updateDefaultTplSelect();
+    renderRules();
+  }else{
+    ruleSection.classList.add('hidden');
+    S.defaultTemplate='';
+    S.rules=[];
+  }
+}
+
+function removeTpl(id){
+  S.templates=S.templates.filter(t=>t.id!==id);
+  S.rules=S.rules.filter(r=>r.templateId!==id);
+  if(S.defaultTemplate===id)S.defaultTemplate=S.templates[0]?.id||'';
+  if(S.selectedTpl>=S.templates.length)S.selectedTpl=Math.max(0,S.templates.length-1);
+  updateTplUI();
+}
+
+function updateDefaultTplSelect(){
+  const sel=document.getElementById('default-tpl');
+  sel.innerHTML=S.templates.map(t=>`<option value="${t.id}"${S.defaultTemplate===t.id?' selected':''}>${t.name}</option>`).join('');
+  if(!S.defaultTemplate&&S.templates.length)S.defaultTemplate=S.templates[0].id;
+}
+
+// ==================== TEMPLATE ASSIGNMENT RULES ====================
+function addRule(){
+  S.rules.push({id:'r'+Date.now(),conditions:[{col:S.headers[0]||'',op:'equals',val:''}],templateId:S.templates[0]?.id||''});
+  renderRules();
+}
+
+function removeRule(id){
+  S.rules=S.rules.filter(r=>r.id!==id);
+  renderRules();
+}
+
+function moveRule(id,dir){
+  const idx=S.rules.findIndex(r=>r.id===id);
+  if(idx<0)return;
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=S.rules.length)return;
+  [S.rules[idx],S.rules[newIdx]]=[S.rules[newIdx],S.rules[idx]];
+  renderRules();
+}
+
+function addRuleCondition(ruleId){
+  const rule=S.rules.find(r=>r.id===ruleId);
+  if(rule)rule.conditions.push({col:S.headers[0]||'',op:'equals',val:''});
+  renderRules();
+}
+
+function removeRuleCondition(ruleId,condIdx){
+  const rule=S.rules.find(r=>r.id===ruleId);
+  if(rule&&rule.conditions.length>1)rule.conditions.splice(condIdx,1);
+  renderRules();
+}
+
+function renderRules(){
+  const list=document.getElementById('rules-list');
+  list.innerHTML=S.rules.map((rule,ri)=>`
+    <div class="rule-card">
+      <div class="rule-card-header">
+        <span style="font-size:11px;font-weight:600;color:var(--primary)">Rule ${ri+1}</span>
+        <div style="display:flex;gap:4px;align-items:center">
+          <div class="rule-priority">
+            <button onclick="moveRule('${rule.id}',-1)" title="Move up">↑</button>
+            <button onclick="moveRule('${rule.id}',1)" title="Move down">↓</button>
+          </div>
+          <button class="btn btn-sm btn-danger" style="padding:4px 8px" onclick="removeRule('${rule.id}')">×</button>
+        </div>
+      </div>
+      <div class="rule-conditions">
+        ${rule.conditions.map((cond,ci)=>`
+          <div class="rule-condition">
+            <span style="font-size:10px;color:var(--text-3);min-width:28px">${ci===0?'IF':'AND'}</span>
+            <select onchange="updateRuleCondition('${rule.id}',${ci},'col',this.value)">${S.headers.map(h=>`<option value="${h}"${cond.col===h?' selected':''}>${h}</option>`).join('')}</select>
+            <select onchange="updateRuleCondition('${rule.id}',${ci},'op',this.value)">${OPERATORS.map(o=>`<option value="${o.value}"${cond.op===o.value?' selected':''}>${o.label}</option>`).join('')}</select>
+            <input type="text" value="${cond.val||''}" onchange="updateRuleCondition('${rule.id}',${ci},'val',this.value)" placeholder="Value..." ${NO_VALUE_OPS.includes(cond.op)?'disabled style="opacity:0.5"':''}>
+            ${rule.conditions.length>1?`<button style="border:none;background:rgba(239,68,68,.1);color:var(--danger);width:20px;height:20px;border-radius:4px;cursor:pointer;font-size:10px" onclick="removeRuleCondition('${rule.id}',${ci})">×</button>`:'<span style="width:20px"></span>'}
+          </div>
+        `).join('')}
+        <button class="add-rule" style="font-size:10px;margin-left:28px" onclick="addRuleCondition('${rule.id}')">+ AND</button>
+      </div>
+      <div class="rule-template">
+        <label>→ Use:</label>
+        <select onchange="updateRuleTemplate('${rule.id}',this.value)">${S.templates.map(t=>`<option value="${t.id}"${rule.templateId===t.id?' selected':''}>${t.name}</option>`).join('')}</select>
+      </div>
+    </div>
+  `).join('');
+  updateDefaultTplSelect();
+}
+
+function updateRuleCondition(ruleId,condIdx,field,value){
+  const rule=S.rules.find(r=>r.id===ruleId);
+  if(rule&&rule.conditions[condIdx]){
+    rule.conditions[condIdx][field]=value;
+    if(field==='op'&&NO_VALUE_OPS.includes(value))rule.conditions[condIdx].val='';
+    renderRules();
+  }
+}
+
+function updateRuleTemplate(ruleId,tplId){
+  const rule=S.rules.find(r=>r.id===ruleId);
+  if(rule)rule.templateId=tplId;
+}
+
+function getTemplateForRow(row){
+  for(const rule of S.rules){
+    const match=rule.conditions.every(cond=>evaluateCondition(cond,row));
+    if(match)return S.templates.find(t=>t.id===rule.templateId);
+  }
+  return S.templates.find(t=>t.id===S.defaultTemplate)||S.templates[0];
+}
+
+// ==================== MAPPING ====================
+function initMapping(){
+  S.selectedTpl=0;
+  updateTplTabs();
+  updateMappingForTpl();
+  document.getElementById('row-total').textContent=getActiveRows().length;
+}
+
+function selectTpl(i){S.selectedTpl=i;S.previewRow=0;updateTplTabs();updateMappingForTpl()}
+
+function updateTplTabs(){
+  const tabs=document.getElementById('tpl-tabs');
+  if(S.templates.length<=1){tabs.innerHTML='';return}
+  tabs.innerHTML=S.templates.map((t,i)=>`<div class="template-tab${i===S.selectedTpl?' active':''}" onclick="selectTpl(${i})"><span class="t-icon">📝</span><span class="t-name">${t.name}</span></div>`).join('');
+}
+
+function updateMappingForTpl(){
+  const tpl=S.templates[S.selectedTpl];
+  if(!tpl)return;
+  const list=document.getElementById('mapping-list');
+  tpl.placeholders.forEach(p=>{if(!S.mapping[p]){const m=S.headers.find(h=>h.toLowerCase()===p.toLowerCase());S.mapping[p]=m||''}});
+  document.getElementById('map-tpl-name').textContent=S.templates.length>1?tpl.name:'';
+  list.innerHTML=tpl.placeholders.map(p=>{
+    const mapped=S.mapping[p],special=['Year','Date','Counter'].includes(p);
+    const status=special?'ok':mapped?(mapped.toLowerCase()===p.toLowerCase()?'ok':'warn'):'err';
+    const icon=status==='ok'?'✓':status==='warn'?'!':'?';
+    if(special)return`<div class="map-item"><span class="map-ph">{{${p}}}</span><span class="map-arrow">→</span><span style="flex:1;color:var(--text-2);font-size:10px">Auto-generated</span><div class="map-status ok">✓</div></div>`;
+    return`<div class="map-item"><span class="map-ph">{{${p}}}</span><span class="map-arrow">→</span><select class="map-select" onchange="setMapping('${p}',this.value)"><option value="">Select...</option>${S.headers.map(h=>`<option value="${h}"${h===mapped?' selected':''}>${h}</option>`).join('')}</select><div class="map-status ${status}">${icon}</div></div>`;
+  }).join('');
+  updatePreviewDoc();
+}
+
+function setMapping(p,v){S.mapping[p]=v;updateMappingForTpl()}
+function setPreviewMode(m,btn){S.previewMode=m;document.querySelectorAll('.preview-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');updatePreviewDoc()}
+function prevRow(){if(S.previewRow>0){S.previewRow--;updatePreviewDoc()}}
+function nextRow(){if(S.previewRow<getActiveRows().length-1){S.previewRow++;updatePreviewDoc()}}
+
+function updatePreviewDoc(){
+  const tpl=S.templates[S.selectedTpl];
+  if(!tpl)return;
+  const el=document.getElementById('preview-body'),rows=getActiveRows();
+  document.getElementById('row-num').textContent=S.previewRow+1;
+  document.getElementById('row-total').textContent=rows.length;
+  document.getElementById('prev-btn').disabled=S.previewRow===0;
+  document.getElementById('next-btn').disabled=S.previewRow>=rows.length-1;
+  
+  let c=tpl.htmlContent||tpl.content;
+  const isHtml=!!tpl.htmlContent;
+  
+  if(S.previewMode==='raw'){
+    tpl.placeholders.forEach(p=>{
+      const regex=new RegExp(`\\{\\{${p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\}\\}`,'g');
+      c=c.replace(regex,`<span class="ph">{{${p}}}</span>`);
+    });
+  }else{
+    const row=rows[S.previewRow]||[];
+    tpl.placeholders.forEach(p=>{
+      let v='';
+      if(p==='Year')v=new Date().getFullYear();
+      else if(p==='Date')v=new Date().toISOString().split('T')[0];
+      else if(p==='Counter')v=String(S.previewRow+1).padStart(3,'0');
+      else{const col=S.mapping[p];if(col){const i=S.headers.indexOf(col);v=row[i]||''}}
+      const regex=new RegExp(`\\{\\{${p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\}\\}`,'g');
+      c=c.replace(regex,`<span class="merged">${v||'???'}</span>`);
+    });
+  }
+  if(!isHtml)c=c.replace(/\n/g,'<br>');
+  el.innerHTML=c;
+}
+
+// ==================== CONFIG ====================
+function initConfig(){
+  updateTokens();
+  populateConfigSelects();
+  updateDelivery();
+}
+
+function updateTokens(){
+  const c=document.getElementById('tokens');
+  c.innerHTML='<button class="token special" onclick="addToken(\'{{Year}}\')">Year</button><button class="token special" onclick="addToken(\'{{Date}}\')">Date</button><button class="token special" onclick="addToken(\'{{Counter}}\')">Counter</button>';
+  S.headers.forEach(h=>{const b=document.createElement('button');b.className='token';b.textContent=h;b.onclick=()=>addToken(`{{${h}}}`);c.appendChild(b)});
+}
+
+function addToken(t){
+  const i=document.getElementById('filename'),p=i.selectionStart;
+  i.value=i.value.slice(0,p)+t+i.value.slice(p);
+  S.config.filename=i.value;
+  updateFilenamePreview();
+  i.focus();
+}
+
+function updateFilenamePreview(){
+  let p=document.getElementById('filename').value;
+  const row=getActiveRows()[0]||[];
+  S.headers.forEach((h,i)=>{p=p.replace(new RegExp(`\\{\\{${h}\\}\\}`,'g'),row[i]||h)});
+  p=p.replace(/\{\{Year\}\}/g,new Date().getFullYear()).replace(/\{\{Date\}\}/g,new Date().toISOString().split('T')[0]).replace(/\{\{Counter\}\}/g,'001');
+  const ext=S.config.format==='both'?'.pdf/.docx':'.'+S.config.format;
+  document.getElementById('filename-preview').textContent=p+ext;
+}
+
+function populateConfigSelects(){}
+function populateColumnSelects(){}
+
+function updateDelivery(){
+  S.config.delivery=[];
+  document.querySelectorAll('input[name="delivery"]:checked').forEach(i=>S.config.delivery.push(i.value));
+  document.getElementById('drive-opts').classList.toggle('hidden',!S.config.delivery.includes('drive'));
+}
+
+function toggleDriveOpts(){
+  var custom=document.querySelector('input[name="drive-dest"][value="custom"]').checked;
+  S.config.driveDest=custom?'custom':'auto';
+  document.getElementById('custom-folder-url').classList.toggle('hidden',!custom);
+}
+
+function toggleSubfolders(){
+  var on=document.getElementById('subfolder-toggle').classList.toggle('on');
+  S.config.subfolders=on;
+  document.getElementById('subfolder-config').classList.toggle('show',on);
+  if(on&&S.config.subfolderLevels.length===0){
+    addSubfolderLevel();
+  }
+  updateSubfolderPreview();
+}
+
+function addSubfolderLevel(){
+  if(S.config.subfolderLevels.length>=3)return;
+  S.config.subfolderLevels.push(S.headers[0]||'');
+  renderSubfolderLevels();
+  updateSubfolderPreview();
+}
+
+function removeSubfolderLevel(idx){
+  S.config.subfolderLevels.splice(idx,1);
+  if(S.config.subfolderLevels.length===0){
+    document.getElementById('subfolder-toggle').classList.remove('on');
+    S.config.subfolders=false;
+    document.getElementById('subfolder-config').classList.remove('show');
+  }
+  renderSubfolderLevels();
+  updateSubfolderPreview();
+}
+
+function updateSubfolderLevel(idx,value){
+  S.config.subfolderLevels[idx]=value;
+  updateSubfolderPreview();
+}
+
+function renderSubfolderLevels(){
+  var container=document.getElementById('subfolder-levels');
+  container.innerHTML=S.config.subfolderLevels.map(function(col,i){
+    return '<div class="subfolder-level">'+
+      '<span class="subfolder-level-num">'+(i+1)+'</span>'+
+      '<select onchange="updateSubfolderLevel('+i+',this.value)">'+
+      S.headers.map(function(h){return '<option value="'+h+'"'+(col===h?' selected':'')+'>'+h+'</option>'}).join('')+
+      '</select>'+
+      '<button class="remove-level" onclick="removeSubfolderLevel('+i+')">×</button>'+
+    '</div>';
+  }).join('');
+  document.getElementById('add-level-btn').style.display=S.config.subfolderLevels.length>=3?'none':'inline-block';
+}
+
+function updateSubfolderPreview(){
+  var preview=document.getElementById('subfolder-preview');
+  if(!S.config.subfolders||S.config.subfolderLevels.length===0){
+    preview.innerHTML='';
+    return;
+  }
+  var row=getActiveRows()[0]||[];
+  var parts=S.config.subfolderLevels.map(function(col){
+    var idx=S.headers.indexOf(col);
+    return idx>=0&&row[idx]?row[idx]:col;
+  });
+  var filename=S.config.filename;
+  S.headers.forEach(function(h,i){filename=filename.replace(new RegExp('\\{\\{'+h+'\\}\\}','g'),row[i]||h)});
+  filename=filename.replace(/\{\{Year\}\}/g,new Date().getFullYear()).replace(/\{\{Date\}\}/g,new Date().toISOString().split('T')[0]).replace(/\{\{Counter\}\}/g,'001');
+  
+  preview.innerHTML='<div class="subfolder-preview-title">📁 Preview Structure</div>'+
+    '<div class="subfolder-preview-path">'+
+    '<span>📁 Mail Merge</span> / '+
+    parts.map(function(p){return '<span>📁 '+p+'</span>'}).join(' / ')+
+    ' / <span>'+filename+'.'+S.config.format+'</span>'+
+    '</div>';
+}
+
+// ==================== GENERATE ====================
+function initGenerate(){
+  S.config.customFolderUrl=document.getElementById('custom-folder-url').value.trim();
+  S.config.generateLog=true;
+  S.config.replaceExisting=true;
+  updateSummaryPreview();
+  runValidation();
+}
+
+function runValidation(){
+  var issues=[];
+  var rows=getActiveRows();
+  var allPhs=[...new Set(S.templates.flatMap(function(t){return t.placeholders}))];
+  var unmapped=allPhs.filter(function(p){return !['Year','Date','Counter'].includes(p)&&!S.mapping[p]});
+  if(unmapped.length)issues.push(unmapped.length+' unmapped fields: '+unmapped.slice(0,3).map(function(p){return '{{'+p+'}}'}).join(', ')+(unmapped.length>3?'...':''));
+  if(S.config.delivery.includes('drive')&&S.config.driveDest==='custom'&&!S.config.customFolderUrl)issues.push('Custom folder selected but no URL provided');
+  if(S.templates.length>1&&S.rules.length===0)issues.push('Multiple templates but no assignment rules (will use default)');
+  
+  var box=document.getElementById('validation-box');
+  var list=document.getElementById('validation-list');
+  if(issues.length){
+    box.classList.remove('hidden','success');
+    box.classList.toggle('error',issues.some(function(i){return i.includes('unmapped')}));
+    document.querySelector('#validation-box .validation-title').innerHTML='⚠️ Validation Issues';
+    list.innerHTML=issues.map(function(i){return '<li>'+i+'</li>'}).join('');
+  }else{
+    box.classList.remove('error');box.classList.add('success');
+    document.querySelector('#validation-box .validation-title').innerHTML='✅ Ready to Generate';
+    list.innerHTML='<li>All validations passed</li>';
+  }
+}
+
+function updateSummaryPreview(){
+  var rows=getActiveRows();
+  
+  // Data Source
+  var fileName=S.dataFile?S.dataFile.name:'Not selected';
+  if(fileName.length>30)fileName=fileName.substring(0,27)+'...';
+  document.getElementById('sum-data-file').textContent=fileName;
+  document.getElementById('sum-rows').textContent=rows.length;
+  document.getElementById('sum-cols').textContent=S.headers.length+' columns';
+  
+  // Template - cleaner display
+  var tplDisplay='';
+  if(S.templates.length===0){
+    tplDisplay='Not selected';
+  }else if(S.templates.length===1){
+    var tplName=S.templates[0].name;
+    if(tplName.length>35)tplName=tplName.substring(0,32)+'...';
+    tplDisplay=tplName;
+  }else{
+    tplDisplay=S.templates.length+' templates';
+  }
+  document.getElementById('sum-tpl-files').textContent=tplDisplay;
+  var allPhs=[...new Set(S.templates.flatMap(function(t){return t.placeholders}))];
+  var mappedCount=allPhs.filter(function(p){return ['Year','Date','Counter'].includes(p)||S.mapping[p]}).length;
+  var mappingStatus=mappedCount===allPhs.length?'✓ All mapped':'⚠ '+mappedCount+'/'+allPhs.length;
+  document.getElementById('sum-placeholders').textContent=allPhs.length+' fields';
+  document.getElementById('sum-mapping').textContent=mappingStatus;
+  
+  // Output Settings
+  var filenamePreview=S.config.filename;
+  var row=rows[0]||[];
+  S.headers.forEach(function(h,i){filenamePreview=filenamePreview.replace(new RegExp('\\{\\{'+h+'\\}\\}','g'),row[i]||h)});
+  filenamePreview=filenamePreview.replace(/\{\{Year\}\}/g,new Date().getFullYear()).replace(/\{\{Date\}\}/g,new Date().toISOString().split('T')[0]).replace(/\{\{Counter\}\}/g,'001');
+  if(filenamePreview.length>35)filenamePreview=filenamePreview.substring(0,32)+'...';
+  document.getElementById('sum-filename').textContent=filenamePreview+'.'+S.config.format;
+  document.getElementById('sum-format').textContent=S.config.format.toUpperCase();
+  
+  var delivery=[];
+  if(S.config.delivery.includes('drive'))delivery.push('Drive');
+  if(S.config.delivery.includes('zip'))delivery.push('ZIP');
+  document.getElementById('sum-delivery').textContent=delivery.join(' + ')||'None';
+  
+  // Subfolder row
+  if(S.config.subfolders&&S.config.subfolderLevels.length>0){
+    document.getElementById('sum-subfolder-row').style.display='flex';
+    document.getElementById('sum-subfolders').textContent=S.config.subfolderLevels.join(' → ');
+  }else{
+    document.getElementById('sum-subfolder-row').style.display='none';
+  }
+  
+  // Update generate button
+  document.getElementById('gen-count').textContent=rows.length;
+}
+
+
+
+function startGen(){
+  S.generating=true;S.cancelled=false;
+  S.results={success:0,failed:0,failedRows:[],files:[],startTime:Date.now(),durationSec:0};
+  S.processedCount=0;
+  S.sessionId='session_'+Date.now();
+  
+  var rows=getActiveRows();
+  S.totalBatches=Math.ceil(rows.length/BATCH_SIZE);
+  S.currentBatch=0;
+  
+  document.getElementById('action-btns').style.display='none';
+  document.getElementById('progress-section').classList.add('show');
+  document.getElementById('results-section').classList.remove('show');
+  document.getElementById('cancel-btn').disabled=false;
+  document.getElementById('open-folder-progress').style.display='none';
+  document.getElementById('p-log').innerHTML='<div class="log-entry">Starting generation...</div>';
+  document.getElementById('p-cur').textContent='0';
+  document.getElementById('p-total').textContent=rows.length;
+  document.getElementById('p-fill').style.width='0%';
+  document.getElementById('progress-title').textContent='Generating...';
+  
+  // Step 1: Create output folder
+  var folderName='Mail Merge - '+new Date().toISOString().split('T')[0]+' '+new Date().toTimeString().split(' ')[0].replace(/:/g,'-');
+  var customFolderUrl=S.config.driveDest==='custom'?S.config.customFolderUrl:'';
+  var parentFolderId=customFolderUrl?extractFolderIdFromUrl(customFolderUrl):null;
+  
+  document.getElementById('p-log').innerHTML+='<div class="log-entry">Creating output folder...</div>';
+  
+  google.script.run
+    .withSuccessHandler(function(folderResult){
+      if(!folderResult.success){
+        document.getElementById('p-log').innerHTML+='<div class="log-entry error">✗ Failed to create folder: '+folderResult.error+'</div>';
+        finishGen();
+        return;
+      }
+      
+      S.outputFolderId=folderResult.folderId;
+      S.outputFolderUrl=folderResult.folderUrl;
+      document.getElementById('p-log').innerHTML+='<div class="log-entry success">✓ Folder created: '+folderResult.folderName+'</div>';
+      
+      // Show Open Folder button immediately
+      document.getElementById('open-folder-progress').style.display='inline-flex';
+      
+      // Save initial progress to database
+      saveProgress(0);
+      
+      // Start batch processing
+      processNextBatch();
+    })
+    .withFailureHandler(function(e){
+      document.getElementById('p-log').innerHTML+='<div class="log-entry error">✗ Failed to create folder: '+e.message+'</div>';
+      finishGen();
+    })
+    .createOutputFolder(folderName,parentFolderId);
+}
+
+function extractFolderIdFromUrl(url){
+  if(!url)return null;
+  var match=url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  return match?match[1]:null;
+}
+
+function processNextBatch(){
+  if(S.cancelled){
+    document.getElementById('p-log').innerHTML+='<div class="log-entry error">⚠️ Generation cancelled by user</div>';
+    finishGen();
+    return;
+  }
+  
+  var rows=getActiveRows();
+  var startIdx=S.currentBatch*BATCH_SIZE;
+  var endIdx=Math.min(startIdx+BATCH_SIZE,rows.length);
+  
+  if(startIdx>=rows.length){
+    // All batches complete
+    finishGen();
+    return;
+  }
+  
+  var batchRows=rows.slice(startIdx,endIdx);
+  var batchNum=S.currentBatch+1;
+  
+  document.getElementById('progress-title').textContent='Generating batch '+batchNum+'/'+S.totalBatches+'...';
+  document.getElementById('p-log').innerHTML+='<div class="log-entry">Processing rows '+(startIdx+1)+'-'+endIdx+'...</div>';
+  
+  var config={
+    dataRows:batchRows,
+    headers:S.headers,
+    templates:S.templates.map(function(t){return{id:t.id,name:t.name}}),
+    defaultTemplateId:S.templates.length>=1?S.defaultTemplate:(S.templates[0]?S.templates[0].id:null),
+    rules:S.rules,
+    mapping:S.mapping,
+    filenamePattern:S.config.filename,
+    outputFormat:S.config.format,
+    folderId:S.outputFolderId,
+    replaceExisting:S.config.replaceExisting,
+    startIndex:startIdx,
+    subfolders:S.config.subfolders,
+    subfolderLevels:S.config.subfolderLevels
+  };
+  
+  google.script.run
+    .withSuccessHandler(function(result){
+      handleBatchResult(result,startIdx,endIdx);
+    })
+    .withFailureHandler(function(e){
+      document.getElementById('p-log').innerHTML+='<div class="log-entry error">✗ Batch failed: '+e.message+'</div>';
+      // Mark all rows in this batch as failed
+      for(var i=startIdx;i<endIdx;i++){
+        S.results.failed++;
+        S.results.failedRows.push({row:i+1,reason:'Batch error: '+e.message});
+      }
+      S.processedCount+=batchRows.length;
+      updateProgressUI();
+      
+      // Continue to next batch
+      S.currentBatch++;
+      saveProgress(S.processedCount);
+      processNextBatch();
+    })
+    .generateDocuments(config);
+}
+
+function handleBatchResult(result,startIdx,endIdx){
+  var log=document.getElementById('p-log');
+  var rows=getActiveRows();
+  
+  // Process results
+  S.results.success+=(result.generated||0);
+  S.results.failed+=(result.failed||0);
+  
+  // Add files to results
+  if(result.files){
+    result.files.forEach(function(f){
+      S.results.files.push(f);
+    });
+  }
+  
+  // Log individual results
+  if(result.logData){
+    result.logData.forEach(function(item){
+      var actualRow=startIdx+item.row; // Adjust row number
+      if(item.status==='success'){
+        log.innerHTML+='<div class="log-entry success">✓ Row '+actualRow+': '+item.filename+'.'+S.config.format+'</div>';
+      }
+    });
+  }
+  
+  // Log failures with details
+  if(result.errors&&result.errors.length>0){
+    result.errors.forEach(function(err){
+      var actualRow=startIdx+err.row; // Adjust row number
+      log.innerHTML+='<div class="log-entry error">✗ Row '+actualRow+': '+err.error+'</div>';
+      S.results.failedRows.push({row:actualRow,reason:err.error});
+    });
+  }
+  
+  // Update processed count
+  S.processedCount=endIdx;
+  updateProgressUI();
+  
+  // Scroll log to bottom
+  log.scrollTop=log.scrollHeight;
+  
+  // Save progress
+  S.currentBatch++;
+  saveProgress(S.processedCount);
+  
+  // Process next batch
+  processNextBatch();
+}
+
+function updateProgressUI(){
+  var rows=getActiveRows();
+  var percent=Math.round((S.processedCount/rows.length)*100);
+  document.getElementById('p-cur').textContent=S.processedCount;
+  document.getElementById('p-fill').style.width=percent+'%';
+}
+
+function saveProgress(processedCount){
+  // Save progress to database for resume capability
+  google.script.run
+    .withSuccessHandler(function(r){})
+    .withFailureHandler(function(e){console.error('Failed to save progress:',e)})
+    .saveGenerationProgress({
+      sessionId:S.sessionId,
+      folderId:S.outputFolderId,
+      folderUrl:S.outputFolderUrl,
+      totalRows:getActiveRows().length,
+      processedCount:processedCount,
+      successCount:S.results.success,
+      failedCount:S.results.failed
+    });
+}
+
+function cancelGen(){
+  if(confirm('Cancel generation?\n\nNote: Documents already being processed on the server will complete.')){
+    S.cancelled=true;
+    document.getElementById('cancel-btn').disabled=true;
+    document.getElementById('progress-title').textContent='Cancelling...';
+    document.getElementById('p-log').innerHTML+='<div class="log-entry error">⚠️ Generation cancelled (server may still be processing)</div>';
+  }
+}
+
+function finishGen(){
+  S.generating=false;
+  S.results.durationSec=Math.round((Date.now()-S.results.startTime)/1000);
+  document.getElementById('progress-section').classList.remove('show');
+  document.getElementById('results-section').classList.add('show');
+  document.getElementById('r-success').textContent=S.results.success;
+  document.getElementById('r-failed').textContent=S.results.failed;
+  document.getElementById('r-time').textContent=S.results.durationSec+'s';
+  
+  var errDetails=document.getElementById('error-details');
+  var errList=document.getElementById('error-list');
+  if(S.results.failed>0){
+    document.getElementById('results-icon').textContent='⚠️';
+    document.getElementById('results-title').textContent='Completed with Errors';
+    document.getElementById('retry-btn').style.display='inline-flex';
+    errDetails.classList.remove('hidden');
+    errList.innerHTML=S.results.failedRows.slice(0,10).map(function(f){return '<li>Row '+f.row+': '+f.reason+'</li>';}).join('');
+    if(S.results.failedRows.length>10)errList.innerHTML+='<li>... and '+(S.results.failedRows.length-10)+' more errors</li>';
+  }else{
+    document.getElementById('results-icon').textContent='✅';
+    document.getElementById('results-title').textContent='Generation Complete!';
+    document.getElementById('retry-btn').style.display='none';
+    errDetails.classList.add('hidden');
+  }
+  
+  // Always show Open Folder and Download ZIP if we have output
+  document.getElementById('open-folder-btn').style.display=S.outputFolderId?'inline-flex':'none';
+  document.getElementById('download-zip-btn').style.display=S.outputFolderId?'inline-flex':'none';
+  
+  logGenerationToDb();
+}
+
+function retryFailed(){
+  if(S.results.failedRows.length===0){alert('No failed rows to retry');return}
+  if(!confirm('Retry '+S.results.failed+' failed rows?'))return;
+  
+  // Get just the failed row indices (0-indexed)
+  var failedIndices=S.results.failedRows.map(function(f){return f.row-1;});
+  var allRows=getActiveRows();
+  var failedRows=failedIndices.map(function(idx){return allRows[idx];}).filter(function(r){return r;});
+  
+  if(failedRows.length===0){alert('Could not find failed rows');return}
+  
+  // Store previous success count
+  var previousSuccess=S.results.success;
+  var previousFiles=S.results.files.slice();
+  
+  // Reset for retry
+  S.generating=true;
+  S.cancelled=false;
+  S.results.startTime=Date.now();
+  S.results.failedRows=[];
+  S.results.failed=0;
+  S.processedCount=0;
+  S.totalBatches=Math.ceil(failedRows.length/BATCH_SIZE);
+  S.currentBatch=0;
+  
+  // Store failed rows for batch processing
+  S.retryRows=failedRows;
+  S.retryIndices=failedIndices;
+  S.previousSuccess=previousSuccess;
+  S.previousFiles=previousFiles;
+  
+  document.getElementById('results-section').classList.remove('show');
+  document.getElementById('progress-section').classList.add('show');
+  document.getElementById('p-log').innerHTML='<div class="log-entry">Retrying '+failedRows.length+' failed rows...</div>';
+  document.getElementById('p-cur').textContent='0';
+  document.getElementById('p-total').textContent=failedRows.length;
+  document.getElementById('p-fill').style.width='0%';
+  document.getElementById('progress-title').textContent='Retrying failed rows...';
+  document.getElementById('open-folder-progress').style.display='inline-flex';
+  
+  // Start retry batch processing
+  processRetryBatch();
+}
+
+function processRetryBatch(){
+  if(S.cancelled){
+    document.getElementById('p-log').innerHTML+='<div class="log-entry error">⚠️ Retry cancelled</div>';
+    S.results.success=S.previousSuccess;
+    S.results.files=S.previousFiles;
+    finishGen();
+    return;
+  }
+  
+  var startIdx=S.currentBatch*BATCH_SIZE;
+  var endIdx=Math.min(startIdx+BATCH_SIZE,S.retryRows.length);
+  
+  if(startIdx>=S.retryRows.length){
+    // All retry batches complete - add back previous success
+    S.results.success+=S.previousSuccess;
+    S.results.files=S.previousFiles.concat(S.results.files);
+    finishGen();
+    return;
+  }
+  
+  var batchRows=S.retryRows.slice(startIdx,endIdx);
+  var batchIndices=S.retryIndices.slice(startIdx,endIdx);
+  
+  document.getElementById('progress-title').textContent='Retrying batch '+(S.currentBatch+1)+'/'+S.totalBatches+'...';
+  
+  var config={
+    dataRows:batchRows,
+    headers:S.headers,
+    templates:S.templates.map(function(t){return{id:t.id,name:t.name}}),
+    defaultTemplateId:S.defaultTemplate||(S.templates[0]?S.templates[0].id:null),
+    rules:S.rules,
+    mapping:S.mapping,
+    filenamePattern:S.config.filename,
+    outputFormat:S.config.format,
+    folderId:S.outputFolderId,
+    replaceExisting:true,
+    startIndex:batchIndices[0],
+    subfolders:S.config.subfolders,
+    subfolderLevels:S.config.subfolderLevels
+  };
+  
+  google.script.run
+    .withSuccessHandler(function(result){
+      handleRetryBatchResult(result,batchIndices);
+    })
+    .withFailureHandler(function(e){
+      document.getElementById('p-log').innerHTML+='<div class="log-entry error">✗ Retry batch failed: '+e.message+'</div>';
+      batchIndices.forEach(function(idx){
+        S.results.failed++;
+        S.results.failedRows.push({row:idx+1,reason:'Batch error: '+e.message});
+      });
+      S.processedCount+=batchRows.length;
+      updateRetryProgressUI();
+      S.currentBatch++;
+      processRetryBatch();
+    })
+    .generateDocuments(config);
+}
+
+function handleRetryBatchResult(result,batchIndices){
+  var log=document.getElementById('p-log');
+  
+  S.results.success+=(result.generated||0);
+  S.results.failed+=(result.failed||0);
+  
+  if(result.files){
+    result.files.forEach(function(f){S.results.files.push(f)});
+  }
+  
+  if(result.logData){
+    result.logData.forEach(function(item,i){
+      var actualRow=batchIndices[i]+1;
+      if(item.status==='success'){
+        log.innerHTML+='<div class="log-entry success">✓ Row '+actualRow+' (retry): '+item.filename+'</div>';
+      }
+    });
+  }
+  
+  if(result.errors&&result.errors.length>0){
+    result.errors.forEach(function(err,i){
+      var actualRow=batchIndices[err.row-1]+1;
+      log.innerHTML+='<div class="log-entry error">✗ Row '+actualRow+' (retry): '+err.error+'</div>';
+      S.results.failedRows.push({row:actualRow,reason:err.error});
+    });
+  }
+  
+  S.processedCount+=batchIndices.length;
+  updateRetryProgressUI();
+  log.scrollTop=log.scrollHeight;
+  
+  S.currentBatch++;
+  processRetryBatch();
+}
+
+function updateRetryProgressUI(){
+  var percent=Math.round((S.processedCount/S.retryRows.length)*100);
+  document.getElementById('p-cur').textContent=S.processedCount;
+  document.getElementById('p-fill').style.width=percent+'%';
+}
+
+function openFolder(){
+  if(!S.outputFolderId){alert('No output folder available');return}
+  showLoading('Opening folder...');
+  google.script.run.withSuccessHandler(function(r){
+    hideLoading();
+    if(r&&r.success&&r.url){
+      window.open(r.url,'_blank');
+    }else if(S.outputFolderUrl){
+      window.open(S.outputFolderUrl,'_blank');
+    }else{
+      alert('Could not retrieve folder URL: '+(r?r.error:'Unknown error'));
+    }
+  }).withFailureHandler(function(e){
+    hideLoading();
+    if(S.outputFolderUrl){
+      window.open(S.outputFolderUrl,'_blank');
+    }else{
+      alert('Error opening folder: '+e.message);
+    }
+  }).getOutputFolderUrl();
+}
+
+function downloadZip(){
+  if(!S.outputFolderId){alert('No files to download');return}
+  showLoadingWithProgress('📦 Creating ZIP File...','Packaging '+S.results.success+' files');
+  google.script.run.withSuccessHandler(function(r){
+    hideLoading();
+    if(r&&r.success&&r.downloadUrl){
+      window.open(r.downloadUrl,'_blank');
+    }else{
+      alert('Error creating ZIP: '+(r?r.error:'Unknown error'));
+    }
+  }).withFailureHandler(function(e){
+    hideLoading();
+    alert('Error creating ZIP: '+e.message);
+  }).createOutputZip(S.outputFolderId);
+}
+
+function viewLog(){
+  var logText='📋 GENERATION LOG\n';
+  logText+='════════════════════════════════════════\n\n';
+  logText+='📊 Summary:\n';
+  logText+='   • Total processed: '+(S.results.success+S.results.failed)+'\n';
+  logText+='   • Successful: '+S.results.success+'\n';
+  logText+='   • Failed: '+S.results.failed+'\n';
+  logText+='   • Duration: '+S.results.durationSec+'s\n';
+  logText+='   • Output folder: '+(S.outputFolderUrl||'N/A')+'\n\n';
+  if(S.results.files&&S.results.files.length>0){
+    logText+='✅ Generated Files (first 10):\n';
+    S.results.files.slice(0,10).forEach(function(f){
+      logText+='   • '+(f.name||f)+'\n';
+    });
+    if(S.results.files.length>10)logText+='   ... and '+(S.results.files.length-10)+' more\n';
+    logText+='\n';
+  }
+  if(S.results.failedRows&&S.results.failedRows.length>0){
+    logText+='❌ Failed Rows:\n';
+    S.results.failedRows.forEach(function(f){
+      logText+='   • Row '+f.row+': '+f.reason+'\n';
+    });
+  }
+  alert(logText);
+}
+
+function resetApp(){location.reload()}
+
+// ==================== PRESETS ====================
+let presetsCache=[];
+
+function loadPresets(){
+  google.script.run.withSuccessHandler(r=>{
+    if(r&&r.success){presetsCache=r.presets||[];renderPresetDropdown()}
+    else{presetsCache=[];renderPresetDropdown()}
+  }).withFailureHandler(()=>{presetsCache=[];renderPresetDropdown()}).getPresets();
+}
+
+function renderPresetDropdown(){
+  const sel=document.getElementById('preset-list');
+  sel.innerHTML='<option value="">Load preset...</option>'+presetsCache.map(p=>`<option value="${p.id}" data-name="${p.name}">${p.name}</option>`).join('');
+  sel.onchange=function(){if(this.value){const preset=presetsCache.find(p=>p.id===this.value);if(preset)applyPreset(preset)}};
+}
+
+function savePreset(){
+  const name=prompt('Preset name:');
+  if(!name||!name.trim())return;
+  showLoading('Saving preset...');
+  const configToSave={config:S.config,mapping:S.mapping,filterRules:S.filterRules,rules:S.rules,defaultTemplate:S.defaultTemplate};
+  google.script.run.withSuccessHandler(r=>{
+    hideLoading();
+    if(r&&r.success){alert('Preset "'+name+'" saved!');loadPresets()}
+    else alert('Error saving preset: '+(r?r.error:'Unknown'));
+  }).withFailureHandler(e=>{hideLoading();alert('Error: '+e.message)}).savePreset(name.trim(),configToSave);
+}
+
+function deletePreset(){
+  const sel=document.getElementById('preset-list');
+  if(!sel.value){alert('Select a preset first');return}
+  if(!confirm('Delete preset "'+sel.options[sel.selectedIndex].dataset.name+'"?'))return;
+  showLoading('Deleting...');
+  google.script.run.withSuccessHandler(r=>{
+    hideLoading();
+    if(r&&r.success){alert('Preset deleted');loadPresets()}
+    else alert('Error: '+(r?r.error:'Unknown'));
+  }).withFailureHandler(e=>{hideLoading();alert('Error: '+e.message)}).deletePreset(sel.value);
+}
+
+function applyPreset(preset){
+  const p=preset.config||preset;
+  if(p.config)Object.assign(S.config,p.config);
+  if(p.mapping)Object.assign(S.mapping,p.mapping);
+  if(p.filterRules)S.filterRules=p.filterRules;
+  if(p.rules)S.rules=p.rules;
+  if(p.defaultTemplate)S.defaultTemplate=p.defaultTemplate;
+  document.getElementById('filename').value=S.config.filename||'{{Year}}_Document_{{Counter}}';
+  updateFilenamePreview();
+  document.querySelectorAll('input[name="format"]').forEach(r=>{
+    const card=r.closest('.opt-card');
+    if(r.value===S.config.format){card.classList.add('selected');r.checked=true}
+    else{card.classList.remove('selected')}
+  });
+  document.querySelectorAll('input[name="delivery"]').forEach(c=>{
+    var card=c.closest('.opt-card');
+    if(S.config.delivery&&S.config.delivery.includes(c.value)){card.classList.add('selected');c.checked=true}
+    else{card.classList.remove('selected');c.checked=false}
+  });
+  if(S.config.subfolders){
+    document.getElementById('subfolder-toggle').classList.add('on');
+    document.getElementById('subfolder-config').classList.add('show');
+    renderSubfolderLevels();
+    updateSubfolderPreview();
+  }
+  alert('Preset "'+preset.name+'" loaded!\n\nUpload your data and templates to continue.');
+}
+
+function logGenerationToDb(){
+  var logData={dataSource:S.dataFile?S.dataFile.name:'',recordsCount:getActiveRows().length,templates:S.templates.map(function(t){return t.name}).join(', '),format:S.config.format,delivery:S.config.delivery.join('+'),subfolders:S.config.subfolders?S.config.subfolderLevels.join(' > '):'',successCount:S.results.success,failedCount:S.results.failed,durationSec:S.results.durationSec};
+  google.script.run.withSuccessHandler(function(r){if(r&&r.success)console.log('Logged:',r.logId)}).withFailureHandler(function(e){console.error('Log error:',e)}).logGeneration(logData);
+}
+
+// ==================== UTILS ====================
+function showLoading(t,s){
+  document.getElementById('loading-text').textContent=t||'Processing...';
+  document.getElementById('loading-sub').textContent=s||'Please wait';
+  document.getElementById('loading-progress-wrap').style.display='none';
+  document.getElementById('loading').classList.add('show');
+}
+function showLoadingWithProgress(t,s){
+  document.getElementById('loading-text').textContent=t||'Processing...';
+  document.getElementById('loading-sub').textContent=s||'Please wait';
+  document.getElementById('loading-progress-wrap').style.display='block';
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading(){document.getElementById('loading').classList.remove('show')}
+</script>
+</body>
+</html>
