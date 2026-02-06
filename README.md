@@ -95,7 +95,7 @@ A Google Apps Script web app for generating personalized documents at scale. Con
 └─────────────────────┬────────────────────────────┘
                       │ google.script.run
 ┌─────────────────────▼────────────────────────────┐
-│  Google Apps Script Backend (Code.gs)             │
+│  Google Apps Script Backend (DemoCode.gs)             │
 │  - Spreadsheet data reading + parsing             │
 │  - Template placeholder extraction                │
 │  - Document generation (Docs/Slides → PDF/DOCX)   │
@@ -113,7 +113,7 @@ A Google Apps Script web app for generating personalized documents at scale. Con
 ## Project Structure
 
 ```
-├── Code.gs              # Backend (1,100 lines)
+├── DemoCode.gs              # Backend (1,100 lines)
 ├── MailMergeApp.html    # Frontend (1,850 lines)
 └── README.md
 ```
@@ -121,7 +121,7 @@ A Google Apps Script web app for generating personalized documents at scale. Con
 ## Setup
 
 1. Create a new [Google Apps Script](https://script.google.com) project
-2. Replace `Code.gs` with the backend code
+2. Replace `DemoCode.gs` with the backend code
 3. Create `MailMergeApp.html` and paste the frontend code
 4. **Deploy → New Deployment → Web app**
    - Execute as: User accessing the web app
